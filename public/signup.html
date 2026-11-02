@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Free Account — INVOX Studio</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-route-pending bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Bar -->
+  <header class="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2.5 group">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-1 ring-white/20 group-hover:scale-105 transition">
+        <i data-lucide="receipt" class="w-5 h-5 text-white stroke-[2.5]"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">INVOX</span>
+          <span class="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Pro</span>
+        </div>
+      </div>
+    </a>
+
+    <div class="flex items-center gap-3">
+      <button type="button" class="theme-toggle-btn p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800 transition" title="Toggle Theme">
+        <i data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
+      </button>
+      <a href="login.html" class="text-xs font-semibold text-slate-300 hover:text-white px-3 py-1.5 rounded-xl border border-slate-700 hover:bg-slate-800 transition">
+        Sign In
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Sign Up Card Container -->
+  <main class="w-full max-w-md mx-auto px-4 py-6">
+    
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur relative overflow-hidden landing-card">
+      
+      <!-- Ambient Card Glow -->
+      <div class="absolute -top-20 -right-20 w-48 h-48 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+      <!-- Header -->
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-extrabold text-white tracking-tight">Create Free Account</h1>
+        <p class="text-xs text-slate-400 mt-1">Start issuing compliant invoices &amp; POs in seconds</p>
+      </div>
+
+      <!-- Google OAuth Sign Up Button -->
+      <button 
+        type="button" 
+        id="btn-google-signup" 
+        class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs shadow-md transition flex items-center justify-center gap-3 active:scale-95"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>Sign up with Google</span>
+      </button>
+
+      <!-- Divider -->
+      <div class="relative text-center my-5">
+        <span class="px-2 bg-slate-900 text-slate-500 text-[10px] uppercase font-bold tracking-wider relative z-10">Or register with email</span>
+        <div class="absolute inset-0 top-1/2 border-t border-slate-800"></div>
+      </div>
+
+      <!-- Friendly Error Notification Box -->
+      <div id="signup-error-box" class="hidden mb-4 p-3.5 rounded-xl bg-rose-950/40 border border-rose-800/60 text-xs text-rose-300 flex items-start gap-2.5">
+        <i data-lucide="alert-circle" class="w-4 h-4 text-rose-400 shrink-0 mt-0.5"></i>
+        <div id="signup-error-message">Error creating account</div>
+      </div>
+
+      <!-- SIGN UP FORM -->
+      <form id="signup-form" class="space-y-4 text-xs" novalidate>
+        
+        <!-- Full Name Input -->
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1" for="signup-name">Full Name <span class="text-rose-400">*</span></label>
+          <div class="relative">
+            <input 
+              type="text" 
+              id="signup-name" 
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition pl-9" 
+              placeholder="e.g. Rahul Sharma" 
+              required
+            >
+            <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+          </div>
+          <p id="name-val-error" class="text-[11px] text-rose-400 mt-1 hidden"></p>
+        </div>
+
+        <!-- Email Input -->
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1" for="signup-email">Work Email <span class="text-rose-400">*</span></label>
+          <div class="relative">
+            <input 
+              type="email" 
+              id="signup-email" 
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition pl-9" 
+              placeholder="you@company.com" 
+              required
+            >
+            <i data-lucide="mail" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+          </div>
+          <p id="email-val-error" class="text-[11px] text-rose-400 mt-1 hidden"></p>
+        </div>
+
+        <!-- Password Input with Show/Hide Toggle -->
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1" for="signup-password">Password <span class="text-rose-400">*</span></label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="signup-password" 
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition pl-9 pr-10" 
+              placeholder="Create strong password" 
+              required
+            >
+            <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+            <button type="button" id="btn-toggle-signup-pass" class="absolute right-3 top-2.5 text-slate-400 hover:text-white p-0.5 rounded transition">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Password Strength Meter Visual Bar -->
+          <div class="mt-2 space-y-1.5">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="text-slate-400">Password strength:</span>
+              <span id="strength-label" class="font-bold text-slate-500">None</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div id="strength-bar" class="h-full w-0 bg-slate-700 transition-all duration-300"></div>
+            </div>
+
+            <!-- Requirement Checklist Pills -->
+            <div class="grid grid-cols-2 gap-1.5 pt-1.5 text-[10px]">
+              <span id="chk-len" class="flex items-center gap-1 text-slate-500"><i data-lucide="circle" class="w-2.5 h-2.5"></i> 8+ characters</span>
+              <span id="chk-upper" class="flex items-center gap-1 text-slate-500"><i data-lucide="circle" class="w-2.5 h-2.5"></i> Uppercase letter</span>
+              <span id="chk-lower" class="flex items-center gap-1 text-slate-500"><i data-lucide="circle" class="w-2.5 h-2.5"></i> Lowercase letter</span>
+              <span id="chk-num" class="flex items-center gap-1 text-slate-500"><i data-lucide="circle" class="w-2.5 h-2.5"></i> Number (0-9)</span>
+              <span id="chk-spec" class="flex items-center gap-1 text-slate-500 col-span-2"><i data-lucide="circle" class="w-2.5 h-2.5"></i> Special symbol (!@#$%^&*)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm Password Input with Show/Hide Toggle -->
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1" for="signup-confirm-password">Confirm Password <span class="text-rose-400">*</span></label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="signup-confirm-password" 
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition pl-9 pr-10" 
+              placeholder="Re-enter password" 
+              required
+            >
+            <i data-lucide="shield-check" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+            <button type="button" id="btn-toggle-signup-conf" class="absolute right-3 top-2.5 text-slate-400 hover:text-white p-0.5 rounded transition">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <p id="conf-val-error" class="text-[11px] text-rose-400 mt-1 hidden"></p>
+        </div>
+
+        <!-- Terms agreement notice -->
+        <p class="text-[11px] text-slate-400 leading-relaxed pt-1">
+          By signing up, you agree to our 
+          <a href="index.html#faq" class="text-indigo-400 hover:underline">Terms of Service</a> and 
+          <a href="index.html#faq" class="text-indigo-400 hover:underline">Privacy Policy</a>.
+        </p>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          id="btn-signup-submit" 
+          class="w-full py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2 active:scale-95"
+        >
+          <span>Create My Free Account</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </button>
+
+      </form>
+
+      <!-- Footer Prompt -->
+      <div class="mt-6 pt-5 border-t border-slate-800/80 text-center text-xs text-slate-400">
+        Already have an account? 
+        <a href="login.html" class="text-indigo-400 font-bold hover:underline">Sign in</a>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="no-print"></div>
+
+  <!-- Page Footer -->
+  <footer class="py-6 text-center text-[11px] text-slate-500">
+    © 2026 INVOX Studio. Multi-Tenant Isolated Workspaces.
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-runtime-config.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js?v=20261102-google-redirect"></script>
+  <script src="js/storage.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Theme Mode
+      const savedTheme = localStorage.getItem('invox_theme_mode') || 'dark';
+      if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+
+      document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const isDark = document.documentElement.classList.toggle('dark');
+          localStorage.setItem('invox_theme_mode', isDark ? 'dark' : 'light');
+        });
+      });
+
+      // 2. Redirect if already authenticated
+      if (window.InvoxAuth) {
+        let redirecting = false;
+        const redirectAuthenticatedUser = user => {
+          if (!user || redirecting) return;
+          redirecting = true;
+          window.InvoxAuth.redirectIfAuthenticated('app.html');
+        };
+        window.InvoxAuth.onAuthStateChanged(redirectAuthenticatedUser);
+        window.InvoxAuth.whenReady().then(() => {
+          document.body.classList.remove('auth-route-pending');
+          redirectAuthenticatedUser(window.InvoxAuth.getCurrentUser());
+          const redirectError = window.InvoxAuth.getRedirectError();
+          if (redirectError) showError(redirectError.message);
+        });
+      }
+
+      // 3. Elements
+      const signupForm = document.getElementById('signup-form');
+      const nameInput = document.getElementById('signup-name');
+      const emailInput = document.getElementById('signup-email');
+      const passInput = document.getElementById('signup-password');
+      const confInput = document.getElementById('signup-confirm-password');
+      const submitBtn = document.getElementById('btn-signup-submit');
+      const errorBox = document.getElementById('signup-error-box');
+      const errorMsg = document.getElementById('signup-error-message');
+
+      // Pre-fill email from query parameters if passed
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('email')) {
+        emailInput.value = urlParams.get('email');
+      }
+
+      // Strength UI elements
+      const strengthBar = document.getElementById('strength-bar');
+      const strengthLabel = document.getElementById('strength-label');
+      const chkLen = document.getElementById('chk-len');
+      const chkUpper = document.getElementById('chk-upper');
+      const chkLower = document.getElementById('chk-lower');
+      const chkNum = document.getElementById('chk-num');
+      const chkSpec = document.getElementById('chk-spec');
+
+      let registeredEmail = '';
+
+      // Show/Hide Password buttons
+      const togglePassBtn = document.getElementById('btn-toggle-signup-pass');
+      const toggleConfBtn = document.getElementById('btn-toggle-signup-conf');
+
+      togglePassBtn.addEventListener('click', () => {
+        const isPass = passInput.type === 'password';
+        passInput.type = isPass ? 'text' : 'password';
+        togglePassBtn.innerHTML = isPass ? '<i data-lucide="eye-off" class="w-4 h-4"></i>' : '<i data-lucide="eye" class="w-4 h-4"></i>';
+        if (window.lucide) window.lucide.createIcons();
+      });
+
+      toggleConfBtn.addEventListener('click', () => {
+        const isPass = confInput.type === 'password';
+        confInput.type = isPass ? 'text' : 'password';
+        toggleConfBtn.innerHTML = isPass ? '<i data-lucide="eye-off" class="w-4 h-4"></i>' : '<i data-lucide="eye" class="w-4 h-4"></i>';
+        if (window.lucide) window.lucide.createIcons();
+      });
+
+      // Real-time password strength meter listener
+      passInput.addEventListener('input', () => {
+        const val = passInput.value;
+        const res = window.InvoxAuth.constructor.evaluatePasswordStrength(val);
+
+        strengthBar.style.width = res.percent + '%';
+        strengthBar.className = `h-full transition-all duration-300 ${res.colorClass}`;
+        strengthLabel.textContent = res.label;
+        strengthLabel.className = `font-bold ${res.textColor}`;
+
+        updatePill(chkLen, res.checks.length);
+        updatePill(chkUpper, res.checks.upper);
+        updatePill(chkLower, res.checks.lower);
+        updatePill(chkNum, res.checks.number);
+        updatePill(chkSpec, res.checks.special);
+      });
+
+      function updatePill(element, passed) {
+        if (passed) {
+          element.className = 'flex items-center gap-1 text-emerald-400 font-medium';
+          element.innerHTML = '<i data-lucide="check-circle" class="w-2.5 h-2.5"></i>' + element.textContent.trim();
+        } else {
+          element.className = 'flex items-center gap-1 text-slate-500';
+          element.innerHTML = '<i data-lucide="circle" class="w-2.5 h-2.5"></i>' + element.textContent.trim();
+        }
+        if (window.lucide) window.lucide.createIcons();
+      }
+
+      // Form submission
+      signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorBox.classList.add('hidden');
+
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passInput.value;
+        const confirmPassword = confInput.value;
+
+        // Validations
+        if (!name || name.length < 2) {
+          showError('Please enter your full name (minimum 2 characters).');
+          nameInput.focus();
+          return;
+        }
+
+        if (!email || !email.includes('@')) {
+          showError('Please provide a valid work email address.');
+          emailInput.focus();
+          return;
+        }
+
+        if (!password || password.length < 8) {
+          showError('Password must be at least 8 characters long.');
+          passInput.focus();
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          showError('Passwords do not match. Please re-enter your password.');
+          confInput.focus();
+          return;
+        }
+
+        // Loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <svg class="animate-spin h-3.5 w-3.5 text-white inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg> Creating your account...
+        `;
+
+        try {
+          const res = await window.InvoxAuth.signUp(name, email, password, confirmPassword);
+          showToast(`Welcome to INVOX, ${res.displayName || name}!`, 'success');
+          window.setTimeout(() => {
+            window.location.replace('app.html');
+          }, 250);
+
+        } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<span>Create My Free Account</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>`;
+          
+          if (err.code === 'EMAIL_ALREADY_EXISTS' || (err.message && err.message.toLowerCase().includes('already exists'))) {
+            const targetEmail = err.email || email;
+            errorMsg.innerHTML = `
+              <div class="space-y-2">
+                <p>An account with <strong>${targetEmail}</strong> already exists.</p>
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                  <a href="login.html?email=${encodeURIComponent(targetEmail)}" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow transition">
+                    <span>Log In to Account</span>
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                  </a>
+                  <a href="login.html?email=${encodeURIComponent(targetEmail)}&forgot=true" class="text-[11px] text-indigo-400 hover:underline">
+                    Forgot password?
+                  </a>
+                </div>
+              </div>
+            `;
+            errorBox.classList.remove('hidden');
+          } else {
+            showError(err.message || 'Error registering account. Please try again.');
+          }
+          if (window.lucide) window.lucide.createIcons();
+        }
+      });
+
+      // Google Sign-Up
+      document.getElementById('btn-google-signup').addEventListener('click', async () => {
+        try {
+          await window.InvoxAuth.signInWithGoogle();
+        } catch (e) {
+          showError(e.message);
+        }
+      });
+
+      function showError(msg) {
+        errorMsg.innerHTML = msg;
+        errorBox.classList.remove('hidden');
+        if (window.lucide) window.lucide.createIcons();
+      }
+
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.add('toast-leave');
+          setTimeout(() => toast.remove(), 250);
+        }, 3200);
+      }
+
+      if (window.lucide) window.lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

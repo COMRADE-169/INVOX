@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function ownsUser(userId) {
+      return request.auth != null
+        && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read, write: if ownsUser(userId);
+
+      match /{collection}/{recordId} {
+        allow read: if ownsUser(userId)
+          && collection in ['clients', 'vendors', 'invoices', 'purchaseOrders', 'quotations'];
+        allow create, update: if ownsUser(userId)
+          && collection in ['clients', 'vendors', 'invoices', 'purchaseOrders', 'quotations'];
+        allow delete: if ownsUser(userId)
+          && collection in ['clients', 'vendors', 'invoices', 'purchaseOrders', 'quotations'];
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

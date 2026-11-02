@@ -1,0 +1,36 @@
+{
+  "name": "invox-invoice-generator",
+  "version": "1.0.0",
+  "description": "INVOX - Firebase-backed invoice and purchase order studio",
+  "main": "server.js",
+  "scripts": {
+    "build": "node scripts/write-firebase-config.js && npm run build:visuals",
+    "build:visuals": "esbuild public/js/site-motion.js public/js/app-motion.js public/js/hero-scene.jsx --bundle --splitting --minify --format=esm --platform=browser --target=es2020 --outdir=public/js/dist --entry-names=[name] --chunk-names=chunks/[name]-[hash]",
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "invoice",
+    "generator",
+    "pdf",
+    "invoicing",
+    "invox",
+    "gst",
+    "inr"
+  ],
+  "author": "INVOX",
+  "license": "MIT",
+  "dependencies": {
+    "@react-three/fiber": "^9.8.2",
+    "gsap": "^3.15.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

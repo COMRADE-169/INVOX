@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INVOX - Invoice, Quotation &amp; Purchase Order Studio</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- html2pdf.js for Client-side High-Res PDF Rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Auth Engine -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-runtime-config.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js?v=20261102-google-redirect"></script>
+  <script>
+    window.InvoxAuth?.whenReady().then(() => {
+      window.InvoxAuth.requireAuth('app.html');
+    }).catch(error => {
+      console.error('Could not restore the authentication session', error);
+      window.location.replace('login.html');
+    });
+  </script>
+</head>
+<body class="auth-route-pending bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 no-print">
+    <div id="studio-header-inner" class="studio-header-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Brand -->
+      <div id="studio-header-brand">
+        <a id="nav-brand-logo" href="index.html" class="flex items-center gap-3 cursor-pointer group" title="Return to INVOX Homepage">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-1 ring-white/20 group-hover:scale-105 transition">
+            <i data-lucide="receipt" class="w-5 h-5 text-white stroke-[2.5]"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">INVOX</span>
+              <span class="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Pro</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Primary Module Tabs -->
+      <nav id="studio-module-tabs" class="studio-module-tabs flex items-center bg-slate-950/80 p-1.5 rounded-xl border border-slate-800" aria-label="Main Navigation">
+        <button id="nav-tab-invoices" aria-pressed="true" class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow-sm">
+          <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+          <span>Invoices</span>
+          <span id="badge-nav-invoice-count" class="min-w-[1.5rem] h-5 px-1.5 inline-flex items-center justify-center rounded-full text-[11px] bg-white/20 text-white font-bold">0</span>
+        </button>
+        <button id="nav-tab-pos" aria-pressed="false" class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+          <i data-lucide="package-check" class="w-3.5 h-3.5"></i>
+          <span>Purchase Orders</span>
+          <span id="badge-nav-po-count" class="min-w-[1.5rem] h-5 px-1.5 inline-flex items-center justify-center rounded-full text-[11px] bg-slate-800 text-slate-300 font-bold">0</span>
+        </button>
+        <button id="nav-tab-quotations" aria-pressed="false" class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+          <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i>
+          <span>Quotations</span>
+          <span id="badge-nav-quotation-count" class="min-w-[1.5rem] h-5 px-1.5 inline-flex items-center justify-center rounded-full text-[11px] bg-slate-800 text-slate-300 font-bold">0</span>
+        </button>
+      </nav>
+
+      <!-- Center: Mobile Tab Switcher (Visible on mobile/tablet editor views) -->
+      <div id="mobile-tab-switcher" class="flex lg:hidden bg-slate-800/90 p-1 rounded-lg border border-slate-700/80 text-xs font-semibold">
+        <button id="mobile-tab-edit" class="px-3 py-1 rounded-md bg-indigo-600 text-white shadow-sm transition">
+          <span class="flex items-center gap-1"><i data-lucide="edit-3" class="w-3 h-3"></i> Edit</span>
+        </button>
+        <button id="mobile-tab-preview" class="px-3 py-1 rounded-md text-slate-400 hover:text-white transition">
+          <span class="flex items-center gap-1"><i data-lucide="eye" class="w-3 h-3"></i> Preview</span>
+        </button>
+      </div>
+
+      <!-- Right: Action Toolbar -->
+      <div id="studio-header-controls" class="studio-header-controls flex items-center gap-3">
+        
+        <!-- Global Currency Selector -->
+        <div id="currency-control" class="relative">
+          <select id="currency-select" class="invox-select !py-2 !px-3 !text-xs font-semibold bg-slate-800 border-slate-700 text-slate-200 hover:border-slate-600 transition" title="Select Currency">
+            <option value="INR" selected>₹ INR</option>
+            <option value="USD">$ USD</option>
+            <option value="EUR">€ EUR</option>
+            <option value="GBP">£ GBP</option>
+            <option value="AED">AED</option>
+            <option value="CAD">CA$ CAD</option>
+            <option value="AUD">A$ AUD</option>
+            <option value="SGD">S$ SGD</option>
+            <option value="JPY">¥ JPY</option>
+          </select>
+        </div>
+
+        <!-- === INVOICE MODULE TOOLBAR BUTTONS === -->
+        <div id="invoice-toolbar-actions" class="flex items-center gap-2.5">
+          <!-- Saved Clients Button -->
+          <button id="btn-open-clients" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition" title="Saved Clients">
+            <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <span>Clients</span>
+            <span id="badge-client-count" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 font-bold">0</span>
+          </button>
+
+          <!-- Invoices View Switcher: List vs Create -->
+          <button id="btn-toggle-invoice-view" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition" title="Toggle Invoices Directory">
+            <i data-lucide="list" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <span id="invoice-view-toggle-text">All Invoices</span>
+            <span id="badge-invoice-count" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 font-bold">0</span>
+          </button>
+
+          <!-- Sample Invoice Quick Fill -->
+          <button id="btn-load-sample" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-700/60 text-indigo-300 hover:text-white transition" title="Load Sample Invoice">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <span>Sample</span>
+          </button>
+
+          <!-- Print Button -->
+          <button id="btn-print" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white transition" title="Print Invoice (Ctrl+P)">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Print</span>
+          </button>
+
+          <!-- Download PDF CTA -->
+          <button id="btn-download-pdf" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 hover:from-indigo-500 hover:to-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition transform active:scale-95" title="Download High-Res PDF">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Download PDF</span>
+          </button>
+        </div>
+
+        <!-- === PURCHASE ORDER MODULE TOOLBAR BUTTONS === -->
+        <div id="po-toolbar-actions" class="hidden flex items-center gap-2.5">
+          <!-- Saved Vendors Button -->
+          <button id="btn-open-vendors" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition" title="Saved Vendors">
+            <i data-lucide="store" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span>Vendors</span>
+            <span id="badge-vendor-count" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-sky-500/20 text-sky-300 font-bold">0</span>
+          </button>
+
+          <!-- PO View Switcher: List vs Create -->
+          <button id="btn-toggle-po-view" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition">
+            <i data-lucide="list" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span id="po-view-toggle-text">All Orders</span>
+            <span id="badge-po-count" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/20 text-amber-300 font-bold">0</span>
+          </button>
+
+          <!-- Sample PO Quick Fill -->
+          <button id="btn-load-po-sample" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-950/60 hover:bg-sky-900/80 border border-sky-700/60 text-sky-300 hover:text-white transition" title="Load Sample Purchase Order">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span>Sample PO</span>
+          </button>
+
+          <!-- Print PO Button -->
+          <button id="btn-print-po" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white transition" title="Print PO (Ctrl+P)">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Print</span>
+          </button>
+
+          <!-- Download PO PDF CTA -->
+          <button id="btn-download-po-pdf" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-600 via-indigo-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white shadow-lg shadow-sky-600/30 transition transform active:scale-95" title="Download High-Res PO PDF">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Download PO</span>
+          </button>
+        </div>
+
+        <!-- User Account Profile Dropdown -->
+        <div id="studio-profile-menu" class="relative ml-1">
+          <button type="button" id="btn-studio-user-menu" class="flex items-center gap-1.5 p-1 rounded-xl hover:bg-slate-800 border border-transparent hover:border-slate-700 transition" title="User Menu">
+            <div id="studio-user-avatar" class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow">
+              U
+            </div>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 hidden sm:block"></i>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div id="studio-user-dropdown" class="hidden absolute right-0 mt-2 w-56 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl py-2 z-50 text-xs">
+            <div class="px-4 py-2 border-b border-slate-800">
+              <p id="studio-dropdown-name" class="font-bold text-white truncate">User Name</p>
+              <p id="studio-dropdown-email" class="text-[11px] text-slate-400 truncate">user@example.com</p>
+              <span class="inline-block mt-1 px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Verified Account</span>
+            </div>
+            <div class="py-1">
+              <a href="profile.html" class="flex items-center gap-2 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+                <i data-lucide="settings" class="w-4 h-4 text-indigo-400"></i>
+                <span>Profile &amp; Settings</span>
+              </a>
+              <a href="index.html" class="flex items-center gap-2 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+                <i data-lucide="globe" class="w-4 h-4 text-emerald-400"></i>
+                <span>Website</span>
+              </a>
+            </div>
+            <div class="border-t border-slate-800 pt-1">
+              <button type="button" id="btn-studio-logout" class="w-full flex items-center gap-2 px-4 py-2 text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition text-left">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>Log out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- MODULE 1: INVOICES STUDIO (ACTIVE BY DEFAULT)            -->
+  <!-- ======================================================== -->
+  <main id="module-invoices" class="module-section flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
+
+    <!-- SUB-VIEW 1: INVOICES LIST & DIRECTORY -->
+    <section id="invoice-list-view" class="w-full flex flex-col gap-6">
+      
+      <!-- Top Invoice List Header & Controls -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <div class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                <i data-lucide="receipt" class="w-5 h-5"></i>
+              </div>
+              <h2 class="text-base font-bold text-white tracking-tight">Invoices Directory</h2>
+              <span id="invoice-total-badge" class="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">0 Invoices</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Manage client billings, track payment statuses, and issue compliant tax invoices.</p>
+          </div>
+
+          <div class="flex items-center gap-2.5">
+            <button id="btn-invoice-create-new" class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 hover:from-indigo-500 hover:to-indigo-500 text-white shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Create Invoice</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Bar and Status Filters -->
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <!-- Search input -->
+          <div class="relative flex-1 max-w-md">
+            <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3 top-2.5"></i>
+            <input type="text" id="invoice-search-input" class="invox-input pl-9 !py-2 text-xs" placeholder="Search Invoice #, client name, or email...">
+          </div>
+
+          <!-- Status Filter Tabs -->
+          <div class="flex flex-wrap items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800 text-xs font-medium">
+            <button type="button" class="invoice-filter-btn px-2.5 py-1 rounded-lg transition bg-indigo-600 text-white font-semibold" data-status="All">
+              All (<span id="inv-count-all">0</span>)
+            </button>
+            <button type="button" class="invoice-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Draft">
+              Draft (<span id="inv-count-draft">0</span>)
+            </button>
+            <button type="button" class="invoice-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Pending">
+              Pending (<span id="inv-count-pending">0</span>)
+            </button>
+            <button type="button" class="invoice-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Sent">
+              Sent (<span id="inv-count-sent">0</span>)
+            </button>
+            <button type="button" class="invoice-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Paid">
+              Paid (<span id="inv-count-paid">0</span>)
+            </button>
+            <button type="button" class="invoice-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Overdue">
+              Overdue (<span id="inv-count-overdue">0</span>)
+            </button>
+            <button type="button" class="invoice-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Cancelled">
+              Cancelled (<span id="inv-count-cancelled">0</span>)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoices List Table Container -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-950/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800 text-[11px]">
+                <th class="py-3 px-4">Invoice Number & Date</th>
+                <th class="py-3 px-4">Client</th>
+                <th class="py-3 px-3">Due Date</th>
+                <th class="py-3 px-4 text-right">Total Amount</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="invoice-table-body" class="divide-y divide-slate-800/60 text-slate-200">
+              <!-- Dynamically populated by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SUB-VIEW 2: INVOICE EDITOR & LIVE A4 PREVIEW (SPLIT SCREEN) -->
+    <section id="invoice-editor-preview-view" class="w-full flex flex-col lg:flex-row gap-6 hidden">
+
+      <!-- LEFT COLUMN: INVOICE EDITOR -->
+      <div id="editor-container" class="w-full lg:w-1/2 flex flex-col gap-6 order-1">
+
+      <!-- Action Card: New / Save Draft / Reset -->
+      <div class="bg-slate-900/60 backdrop-blur border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <button id="btn-back-to-invoice-list" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 flex items-center gap-1.5 transition">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Back to Invoices</span>
+          </button>
+          <button id="btn-new-invoice" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 flex items-center gap-1.5 transition">
+            <i data-lucide="file-plus-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>New Invoice</span>
+          </button>
+          <button id="btn-save-invoice" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition">
+            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+            <span>Save Invoice</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span class="pulse-dot"></span>
+          <span id="draft-status-text" class="text-[11px]">Auto-saved</span>
+        </div>
+      </div>
+
+      <!-- CARD 1: SENDER / BUSINESS PROFILE -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+              <i data-lucide="building-2" class="w-4 h-4"></i>
+            </div>
+            <h2 class="text-sm font-bold tracking-tight text-white uppercase">Business Details (From)</h2>
+          </div>
+          <button id="btn-save-business-profile" class="text-xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition" title="Save as default business profile">
+            <i data-lucide="bookmark-check" class="w-3.5 h-3.5"></i>
+            <span>Save Profile</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Logo Upload Box -->
+          <div class="md:col-span-1 flex flex-col">
+            <label class="invox-label">Company Logo</label>
+            <div id="logo-dropzone" class="relative flex-1 min-h-[110px] border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-950/40 transition group">
+              <input type="file" id="logo-file-input" accept="image/*" class="hidden">
+              <div id="logo-placeholder" class="flex flex-col items-center justify-center pointer-events-none">
+                <i data-lucide="image-plus" class="w-6 h-6 text-slate-500 group-hover:text-indigo-400 transition mb-1"></i>
+                <span class="text-[11px] font-medium text-slate-400">Upload Logo</span>
+                <span class="text-[9px] text-slate-600">PNG, JPG, SVG</span>
+              </div>
+              <div id="logo-preview-box" class="hidden w-full h-full flex flex-col items-center justify-center">
+                <img id="logo-preview-img" src="" alt="Business Logo" class="max-h-16 max-w-full object-contain mb-1.5">
+                <button type="button" id="btn-remove-logo" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold underline">Remove</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Business Fields -->
+          <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="sm:col-span-2">
+              <label class="invox-label" for="sender-name">Business Name *</label>
+              <input type="text" id="sender-name" class="invox-input font-medium" placeholder="e.g. Apex Digital Solutions" required>
+            </div>
+            <div>
+              <label class="invox-label" for="sender-email">Email</label>
+              <input type="email" id="sender-email" class="invox-input" placeholder="contact@company.com">
+            </div>
+            <div>
+              <label class="invox-label" for="sender-phone">Phone</label>
+              <input type="text" id="sender-phone" class="invox-input" placeholder="+91 98765 43210">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="invox-label" for="sender-address">Address & City</label>
+              <input type="text" id="sender-address" class="invox-input" placeholder="e.g. 402 Tech Hub, Outer Ring Road, Bengaluru 560103">
+            </div>
+            <div>
+              <label class="invox-label" for="sender-tax-id">GSTIN / Tax ID</label>
+              <input type="text" id="sender-tax-id" class="invox-input uppercase font-mono" placeholder="29ABCDE1234F1Z5">
+            </div>
+            <div>
+              <label class="invox-label" for="sender-website">Website</label>
+              <input type="text" id="sender-website" class="invox-input" placeholder="www.yourcompany.com">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2: CLIENT DETAILS -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+              <i data-lucide="user-check" class="w-4 h-4"></i>
+            </div>
+            <h2 class="text-sm font-bold tracking-tight text-white uppercase">Client Details (Bill To)</h2>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Saved Clients Dropdown Selector -->
+            <select id="quick-select-client" class="invox-select !py-1 !px-2 !text-xs bg-slate-800 border-slate-700 text-slate-300">
+              <option value="">-- Load Saved Client --</option>
+            </select>
+            <button id="btn-save-current-client" class="text-xs font-medium text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition" title="Save this client to address book">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+              <span class="hidden sm:inline">Save Client</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="invox-label" for="client-name">Client Name *</label>
+            <input type="text" id="client-name" class="invox-input font-medium" placeholder="e.g. John Doe" required>
+          </div>
+          <div>
+            <label class="invox-label" for="client-company">Company Name</label>
+            <input type="text" id="client-company" class="invox-input" placeholder="e.g. Acme Corporation">
+          </div>
+          <div>
+            <label class="invox-label" for="client-email">Client Email</label>
+            <input type="email" id="client-email" class="invox-input" placeholder="john@acme.com">
+          </div>
+          <div>
+            <label class="invox-label" for="client-phone">Client Phone</label>
+            <input type="text" id="client-phone" class="invox-input" placeholder="+91 99887 76655">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="invox-label" for="client-billing-address">Billing Address</label>
+            <textarea id="client-billing-address" rows="2" class="invox-input resize-none" placeholder="Billing Street address, City, State, PIN"></textarea>
+          </div>
+
+          <!-- Shipping address toggle -->
+          <div class="sm:col-span-2">
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="invox-label mb-0" for="client-shipping-address">Shipping Address</label>
+              <label class="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+                <input type="checkbox" id="client-same-address" checked class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0">
+                <span>Same as billing</span>
+              </label>
+            </div>
+            <textarea id="client-shipping-address" rows="2" class="invox-input resize-none hidden" placeholder="Shipping Street address, City, State, PIN"></textarea>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="invox-label" for="client-tax-id">Client GSTIN / Tax ID</label>
+            <input type="text" id="client-tax-id" class="invox-input uppercase font-mono" placeholder="27AAACG0000A1Z5">
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 3: INVOICE META & DATES -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
+              <i data-lucide="file-text" class="w-4 h-4"></i>
+            </div>
+            <h2 class="text-sm font-bold tracking-tight text-white uppercase">Invoice Info & Dates</h2>
+          </div>
+          <!-- Status Selector -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">Status:</span>
+            <select id="invoice-status" class="invox-select !py-1 !px-2 !text-xs font-semibold bg-slate-800 border-slate-700 text-slate-200">
+              <option value="Draft">Draft</option>
+              <option value="Pending" selected>Pending</option>
+              <option value="Paid">Paid</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="invox-label mb-0" for="invoice-number">Invoice # *</label>
+              <button type="button" id="btn-next-inv-no" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold" title="Generate next sequential number">Next #</button>
+            </div>
+            <input type="text" id="invoice-number" class="invox-input font-mono font-semibold" value="INV-2026-001" required>
+          </div>
+          <div>
+            <label class="invox-label" for="invoice-issue-date">Issue Date *</label>
+            <input type="date" id="invoice-issue-date" class="invox-input" required>
+          </div>
+          <div>
+            <label class="invox-label" for="invoice-due-date">Due Date</label>
+            <input type="date" id="invoice-due-date" class="invox-input">
+          </div>
+          <div class="sm:col-span-2 md:col-span-3 flex flex-wrap items-center gap-2 pt-1">
+            <span class="text-xs text-slate-400">Quick Due Date:</span>
+            <button type="button" class="due-preset-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-300 border border-slate-700 transition" data-days="0">Today</button>
+            <button type="button" class="due-preset-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-300 border border-slate-700 transition" data-days="7">+7 Days</button>
+            <button type="button" class="due-preset-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-300 border border-slate-700 transition" data-days="15">+15 Days</button>
+            <button type="button" class="due-preset-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-300 border border-slate-700 transition" data-days="30">+30 Days</button>
+          </div>
+          <div class="sm:col-span-2 md:col-span-3">
+            <label class="invox-label" for="invoice-po-number">PO / Reference No. (Optional)</label>
+            <input type="text" id="invoice-po-number" class="invox-input font-mono" placeholder="PO-98234">
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 4: LINE ITEMS -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+              <i data-lucide="layers" class="w-4 h-4"></i>
+            </div>
+            <h2 class="text-sm font-bold tracking-tight text-white uppercase">Line Items</h2>
+          </div>
+          <button id="btn-clear-items" class="text-xs text-rose-400 hover:text-rose-300 transition" title="Clear all items">Clear All</button>
+        </div>
+
+        <!-- Line Items Table / Rows Container -->
+        <div id="line-items-container" class="flex flex-col gap-3">
+          <!-- Dynamically populated by app.js -->
+        </div>
+
+        <!-- Add Item Button -->
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+          <button type="button" id="btn-add-item" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 flex items-center gap-2 transition active:scale-95">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Item</span>
+          </button>
+
+          <span class="text-xs text-slate-400">
+            Total items: <span id="items-count" class="font-bold text-white">0</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- CARD 5: TAX SCHEME, EXTRA CHARGES & DISCOUNTS -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+        <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-slate-800">
+          <div class="p-1.5 rounded-lg bg-violet-500/10 text-violet-400">
+            <i data-lucide="calculator" class="w-4 h-4"></i>
+          </div>
+          <h2 class="text-sm font-bold tracking-tight text-white uppercase">Taxes, Extra Discount & Shipping</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <!-- GST Mode -->
+          <div>
+            <label class="invox-label" for="tax-type-select">Tax / GST Mode</label>
+            <select id="tax-type-select" class="invox-select w-full">
+              <option value="intra" selected>Intra-State (CGST + SGST 50/50)</option>
+              <option value="inter">Inter-State (IGST)</option>
+              <option value="single">Standard Single Tax</option>
+            </select>
+          </div>
+
+          <!-- Overall Discount -->
+          <div>
+            <label class="invox-label">Extra Overall Discount</label>
+            <div class="flex gap-2">
+              <input type="number" id="extra-discount-val" class="invox-input" placeholder="0" min="0" step="any">
+              <select id="extra-discount-type" class="invox-select !px-2 w-20">
+                <option value="%" selected>%</option>
+                <option value="flat">Flat</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Shipping / Delivery Charges -->
+          <div>
+            <label class="invox-label" for="shipping-charges">Shipping / Extra Charges</label>
+            <input type="number" id="shipping-charges" class="invox-input font-mono" placeholder="0" min="0" step="any">
+          </div>
+
+          <!-- Round Off Toggle -->
+          <div class="sm:col-span-2 md:col-span-3 flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/80">
+            <div>
+              <span class="text-xs font-semibold text-slate-200">Auto Round-off Grand Total</span>
+              <p class="text-[11px] text-slate-400">Rounds the grand total to the nearest whole integer</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="auto-roundoff-toggle" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 6: PAYMENT & BANK DETAILS (WITH UPI QR CODE!) -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+              <i data-lucide="landmark" class="w-4 h-4"></i>
+            </div>
+            <h2 class="text-sm font-bold tracking-tight text-white uppercase">Bank & UPI Payment Details</h2>
+          </div>
+          <label class="flex items-center gap-1.5 text-xs text-indigo-400 cursor-pointer font-medium">
+            <input type="checkbox" id="show-upi-qr-toggle" checked class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0">
+            <span>Show UPI QR Code</span>
+          </label>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="invox-label" for="bank-name">Bank Name</label>
+            <input type="text" id="bank-name" class="invox-input" placeholder="e.g. HDFC Bank">
+          </div>
+          <div>
+            <label class="invox-label" for="bank-account-name">Account Holder Name</label>
+            <input type="text" id="bank-account-name" class="invox-input" placeholder="e.g. Apex Digital Solutions">
+          </div>
+          <div>
+            <label class="invox-label" for="bank-account-number">Account Number</label>
+            <input type="text" id="bank-account-number" class="invox-input font-mono" placeholder="50200012345678">
+          </div>
+          <div>
+            <label class="invox-label" for="bank-ifsc">IFSC / SWIFT Code</label>
+            <input type="text" id="bank-ifsc" class="invox-input uppercase font-mono" placeholder="HDFC0001234">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="invox-label" for="upi-id">UPI ID / VPA (for Instant QR Payment in India)</label>
+            <div class="relative">
+              <input type="text" id="upi-id" class="invox-input pl-8 font-mono" placeholder="apexdigital@okaxis">
+              <i data-lucide="qr-code" class="w-4 h-4 text-slate-500 absolute left-2.5 top-3"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 7: NOTES & TERMS & SIGNATURE -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80 mb-6">
+        <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-slate-800">
+          <div class="p-1.5 rounded-lg bg-pink-500/10 text-pink-400">
+            <i data-lucide="file-signature" class="w-4 h-4"></i>
+          </div>
+          <h2 class="text-sm font-bold tracking-tight text-white uppercase">Notes, Terms & Signature</h2>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3">
+          <div>
+            <label class="invox-label" for="invoice-notes">Notes to Client</label>
+            <textarea id="invoice-notes" rows="2" class="invox-input resize-none" placeholder="Thank you for partnering with us. Please make payments before the due date."></textarea>
+          </div>
+          <div>
+            <label class="invox-label" for="invoice-terms">Terms & Conditions</label>
+            <textarea id="invoice-terms" rows="2" class="invox-input resize-none" placeholder="1. Payment is due within 15 days of invoice date. 2. Interest of 1.5% per month applicable on overdue balances."></textarea>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div>
+              <label class="invox-label" for="signatory-name">Authorized Signatory Name</label>
+              <input type="text" id="signatory-name" class="invox-input" placeholder="Authorized Signatory">
+            </div>
+            <div>
+              <label class="invox-label">Signature / Stamp Image (Optional)</label>
+              <input type="file" id="signature-file-input" accept="image/*" class="invox-input !py-1 text-xs file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: LIVE A4 INVOICE PREVIEW -->
+    <div id="preview-container" class="w-full lg:w-1/2 flex flex-col gap-4 order-2 hidden lg:flex">
+
+      <!-- PREVIEW TOOLBAR: THEMES & ZOOM -->
+      <div id="controls-toolbar" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-lg no-print">
+        
+        <!-- Live Status Pill -->
+        <div class="flex items-center gap-2">
+          <span class="pulse-dot"></span>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Live Preview</span>
+        </div>
+
+        <!-- Color Themes Selector -->
+        <div class="flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
+          <span class="text-[10px] uppercase font-bold text-slate-400 px-1">Theme:</span>
+          <button type="button" class="theme-btn w-5 h-5 rounded-full ring-2 ring-white ring-offset-2 ring-offset-slate-900 transition" data-theme="indigo" title="Indigo Modern" aria-label="Indigo Modern theme" aria-pressed="true"></button>
+          <button type="button" class="theme-btn w-5 h-5 rounded-full hover:scale-105 transition" data-theme="emerald" title="Emerald Finance" aria-label="Emerald Finance theme" aria-pressed="false"></button>
+          <button type="button" class="theme-btn w-5 h-5 rounded-full hover:scale-105 transition" data-theme="navy" title="Classic Navy" aria-label="Classic Navy theme" aria-pressed="false"></button>
+          <button type="button" class="theme-btn w-5 h-5 rounded-full hover:scale-105 transition" data-theme="ruby" title="Ruby Rose" aria-label="Ruby Rose theme" aria-pressed="false"></button>
+          <button type="button" class="theme-btn w-5 h-5 rounded-full hover:scale-105 transition" data-theme="charcoal" title="Sleek Charcoal" aria-label="Sleek Charcoal theme" aria-pressed="false"></button>
+          <button type="button" class="theme-btn w-5 h-5 rounded-full hover:scale-105 transition" data-theme="obsidian" title="Obsidian Dark" aria-label="Obsidian Dark theme" aria-pressed="false"></button>
+        </div>
+
+        <!-- Zoom Controls -->
+        <div class="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800 text-xs">
+          <button id="btn-zoom-out" class="p-1 rounded hover:bg-slate-800 text-slate-300 transition" title="Zoom Out">
+            <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+          </button>
+          <span id="zoom-level-text" class="px-1 text-[11px] font-mono text-slate-300 font-semibold min-w-[38px] text-center">85%</span>
+          <button id="btn-zoom-in" class="p-1 rounded hover:bg-slate-800 text-slate-300 transition" title="Zoom In">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          </button>
+          <button id="btn-zoom-reset" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-[10px] text-slate-400 transition" title="Fit Screen">Fit</button>
+        </div>
+
+      </div>
+
+      <!-- A4 PAPER PREVIEW CONTAINER -->
+      <div class="a4-container bg-slate-900/40 rounded-2xl border border-slate-800/80 shadow-2xl flex-1 max-h-[calc(100vh-140px)] sticky top-20">
+        
+        <!-- THE INVOICE A4 SHEET -->
+        <article id="invoice-preview-sheet" class="a4-sheet p-8 sm:p-10" data-theme="indigo">
+          
+          <!-- SHEET HEADER -->
+          <div class="flex flex-row justify-between items-start gap-6 pb-6 border-b border-slate-200">
+            <!-- Left: Business Info & Logo -->
+            <div class="flex flex-col gap-2 max-w-[60%]">
+              <div id="pv-logo-container" class="hidden mb-2">
+                <img id="pv-logo-img" src="" alt="Business Logo" class="max-h-16 max-w-[200px] object-contain">
+              </div>
+              <h1 id="pv-sender-name" class="text-xl font-bold tracking-tight text-slate-900">Your Business Name</h1>
+              <div class="text-xs text-slate-600 space-y-0.5">
+                <p id="pv-sender-address" class="whitespace-pre-line leading-relaxed">123 Business Street, Tech District, City</p>
+                <p id="pv-sender-contact">contact@yourbusiness.com | +91 98765 43210</p>
+                <p id="pv-sender-tax" class="font-mono font-semibold text-slate-700">GSTIN: 29ABCDE1234F1Z5</p>
+                <p id="pv-sender-website" class="text-slate-500">www.yourbusiness.com</p>
+              </div>
+            </div>
+
+            <!-- Right: Invoice Title & Meta -->
+            <div class="flex flex-col items-end text-right">
+              <div class="inline-block px-3 py-1 rounded text-xs font-black tracking-widest uppercase invoice-accent-bg mb-2">
+                TAX INVOICE
+              </div>
+              <div class="text-xs text-slate-700 space-y-1 font-mono">
+                <div class="flex justify-end gap-3">
+                  <span class="text-slate-400 uppercase font-sans text-[10px] tracking-wider">Invoice #:</span>
+                  <span id="pv-invoice-number" class="font-bold text-slate-900">INV-2026-001</span>
+                </div>
+                <div class="flex justify-end gap-3">
+                  <span class="text-slate-400 uppercase font-sans text-[10px] tracking-wider">Date:</span>
+                  <span id="pv-issue-date">2026-10-31</span>
+                </div>
+                <div class="flex justify-end gap-3">
+                  <span class="text-slate-400 uppercase font-sans text-[10px] tracking-wider">Due Date:</span>
+                  <span id="pv-due-date" class="font-semibold text-slate-900">2026-11-15</span>
+                </div>
+                <div id="pv-po-row" class="flex justify-end gap-3 hidden">
+                  <span class="text-slate-400 uppercase font-sans text-[10px] tracking-wider">Ref / PO:</span>
+                  <span id="pv-po-number">PO-1234</span>
+                </div>
+              </div>
+
+              <!-- Status Stamp -->
+              <div id="pv-status-stamp" class="mt-3 px-3 py-0.5 rounded-full border text-[11px] font-black uppercase tracking-wider border-amber-500 bg-amber-50 text-amber-700">
+                PENDING
+              </div>
+            </div>
+          </div>
+
+          <!-- CLIENT INFO: BILL TO & SHIP TO -->
+          <div class="grid grid-cols-2 gap-6 py-5 border-b border-slate-200 text-xs">
+            <!-- Bill To -->
+            <div>
+              <span class="font-bold uppercase tracking-wider text-[10px] text-slate-400 block mb-1">Billed To</span>
+              <h2 id="pv-client-name" class="font-bold text-sm text-slate-900">Client Name</h2>
+              <p id="pv-client-company" class="font-medium text-slate-700">Client Company Name</p>
+              <p id="pv-client-billing-address" class="text-slate-600 whitespace-pre-line leading-relaxed mt-1">Client Address, City, State, Country</p>
+              <p id="pv-client-contact" class="text-slate-500 mt-1">client@example.com | +91 99887 76655</p>
+              <p id="pv-client-tax" class="font-mono text-slate-700 mt-0.5">GSTIN: 27AAACG0000A1Z5</p>
+            </div>
+
+            <!-- Ship To (If different or shown) -->
+            <div id="pv-ship-to-box">
+              <span class="font-bold uppercase tracking-wider text-[10px] text-slate-400 block mb-1">Shipped To</span>
+              <p id="pv-client-shipping-address" class="text-slate-600 whitespace-pre-line leading-relaxed">Same as billing address</p>
+            </div>
+          </div>
+
+          <!-- LINE ITEMS TABLE -->
+          <div class="py-5">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="invoice-accent-bg text-white font-bold text-[11px] uppercase tracking-wider">
+                  <th class="py-2.5 px-3 rounded-l">#</th>
+                  <th class="py-2.5 px-3">Item Description</th>
+                  <th class="py-2.5 px-2 text-right">Qty</th>
+                  <th class="py-2.5 px-3 text-right">Rate</th>
+                  <th class="py-2.5 px-2 text-right">Tax</th>
+                  <th class="py-2.5 px-2 text-right">Disc</th>
+                  <th class="py-2.5 px-3 text-right rounded-r">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="pv-line-items-body" class="divide-y divide-slate-100 text-slate-700">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- FINANCIAL SUMMARY & TAX BREAKDOWN -->
+          <div class="grid grid-cols-12 gap-6 py-4 border-t border-slate-200">
+            
+            <!-- Left col: Amount in words & Bank/UPI Details -->
+            <div class="col-span-7 flex flex-col justify-between gap-4 text-xs">
+              
+              <!-- Amount In Words Box -->
+              <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">Total In Words</span>
+                <p id="pv-amount-in-words" class="font-semibold text-slate-800 leading-snug">Indian Rupees Zero Only</p>
+              </div>
+
+              <!-- Bank & Payment Info Box -->
+              <div id="pv-bank-container" class="p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-start justify-between gap-3">
+                <div class="space-y-0.5 text-[11px] text-slate-700">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Bank Payment Details</span>
+                  <p><span class="text-slate-500 font-medium">Bank:</span> <strong id="pv-bank-name">HDFC Bank</strong></p>
+                  <p><span class="text-slate-500 font-medium">A/C Name:</span> <span id="pv-account-name">Apex Digital Solutions</span></p>
+                  <p><span class="text-slate-500 font-medium">A/C No:</span> <strong id="pv-account-no" class="font-mono">50200012345678</strong></p>
+                  <p><span class="text-slate-500 font-medium">IFSC:</span> <strong id="pv-ifsc" class="font-mono">HDFC0001234</strong></p>
+                  <p id="pv-upi-row"><span class="text-slate-500 font-medium">UPI ID:</span> <span id="pv-upi-id" class="font-mono font-bold text-slate-800">apexdigital@okaxis</span></p>
+                </div>
+
+                <!-- UPI QR Code -->
+                <div id="pv-upi-qr-wrapper" class="flex flex-col items-center justify-center p-1 bg-white border border-slate-200 rounded shadow-sm">
+                  <img id="pv-upi-qr-img" src="" alt="UPI Scan To Pay" class="w-20 h-20 object-contain">
+                  <span class="text-[9px] font-bold tracking-tight text-slate-600 mt-0.5">Scan to Pay</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right col: Totals breakdown -->
+            <div class="col-span-5 flex flex-col justify-between text-xs">
+              <div class="space-y-1.5 text-slate-700">
+                <div class="flex justify-between py-1">
+                  <span class="text-slate-500">Items Subtotal:</span>
+                  <span id="pv-items-subtotal" class="font-mono font-semibold text-slate-800">₹0.00</span>
+                </div>
+                <div id="pv-item-discount-row" class="flex justify-between py-0.5 text-emerald-600">
+                  <span>Item Discounts:</span>
+                  <span id="pv-items-discount" class="font-mono font-medium">-₹0.00</span>
+                </div>
+                <div id="pv-extra-discount-row" class="flex justify-between py-0.5 text-emerald-600">
+                  <span>Extra Discount:</span>
+                  <span id="pv-extra-discount" class="font-mono font-medium">-₹0.00</span>
+                </div>
+                
+                <!-- Tax breakdown (CGST, SGST, IGST) -->
+                <div id="pv-tax-breakdown-container" class="space-y-0.5 py-1 border-t border-b border-slate-100 text-[11px]">
+                  <!-- Populated dynamically -->
+                </div>
+
+                <div id="pv-shipping-row" class="flex justify-between py-0.5">
+                  <span class="text-slate-500">Shipping & Handling:</span>
+                  <span id="pv-shipping-amount" class="font-mono font-semibold text-slate-800">₹0.00</span>
+                </div>
+                <div id="pv-roundoff-row" class="flex justify-between py-0.5 text-slate-500 text-[11px]">
+                  <span>Round Off:</span>
+                  <span id="pv-roundoff-amount" class="font-mono">₹0.00</span>
+                </div>
+              </div>
+
+              <!-- Grand Total Banner -->
+              <div class="mt-3 p-3 rounded-xl invoice-accent-light-bg border invoice-accent-border flex justify-between items-center">
+                <span class="text-xs font-bold uppercase tracking-wider invoice-accent-text">Total Due:</span>
+                <span id="pv-grand-total" class="text-lg font-black font-mono invoice-accent-text">₹0.00</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- NOTES, TERMS & SIGNATURE SECTION -->
+          <div class="mt-auto pt-4 border-t border-slate-200 grid grid-cols-12 gap-6 text-xs">
+            <div class="col-span-8 space-y-2">
+              <div id="pv-notes-box">
+                <span class="font-bold text-[10px] uppercase tracking-wider text-slate-400 block mb-0.5">Notes</span>
+                <p id="pv-notes-text" class="text-slate-600 leading-relaxed text-[11px]">Thank you for your business.</p>
+              </div>
+              <div id="pv-terms-box">
+                <span class="font-bold text-[10px] uppercase tracking-wider text-slate-400 block mb-0.5">Terms & Conditions</span>
+                <p id="pv-terms-text" class="text-slate-500 leading-relaxed text-[10px]">1. Payment is due within agreed terms.</p>
+              </div>
+            </div>
+
+            <!-- Signature block -->
+            <div class="col-span-4 flex flex-col items-center justify-end text-center">
+              <div id="pv-signature-container" class="min-h-[48px] flex items-center justify-center mb-1">
+                <img id="pv-signature-img" src="" alt="Signature" class="max-h-12 max-w-[140px] object-contain hidden">
+              </div>
+              <div class="w-full border-t border-slate-300 pt-1">
+                <p id="pv-signatory-name" class="font-bold text-[11px] text-slate-800">Authorized Signatory</p>
+                <p class="text-[9px] text-slate-400 uppercase tracking-wider">Authorized Signature</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+            <span>Thank you for choosing us!</span>
+            <span class="font-medium">Created with INVOX Studio</span>
+          </div>
+
+        </article>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODULE 2: QUOTATIONS & ESTIMATES                         -->
+  <!-- ======================================================== -->
+  <main id="module-quotations" class="module-section hidden flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
+    <section id="quotation-list-view" class="w-full flex flex-col gap-6">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <div class="p-1.5 rounded-lg bg-violet-500/10 text-violet-400">
+                <i data-lucide="file-check-2" class="w-5 h-5"></i>
+              </div>
+              <h2 class="text-base font-bold text-white tracking-tight">Quotations &amp; Estimates</h2>
+              <span id="quotation-total-badge" class="px-2 py-0.5 rounded-full text-xs font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">0 Quotes</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Prepare estimates, track client decisions, and convert accepted quotes into invoices.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Quotes</p>
+              <div class="flex items-baseline gap-2">
+                <span id="quotation-summary-count" class="text-base font-bold text-violet-300">0</span>
+                <span id="quotation-summary-value" class="max-w-[240px] break-words text-[11px] text-slate-400">Total value: ₹0.00</span>
+              </div>
+            </div>
+            <button type="button" id="btn-quotation-create-new" class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-600/20 flex items-center gap-2 transition active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Create Quotation</span>
+            </button>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <div class="relative flex-1 max-w-md">
+            <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3 top-2.5"></i>
+            <input type="search" id="quotation-search-input" class="invox-input pl-9 !py-2 text-xs" placeholder="Search quote number, client, or email...">
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800 text-xs font-medium">
+            <button type="button" class="quotation-filter-btn px-2.5 py-1 rounded-lg transition bg-indigo-600 text-white font-semibold" data-status="All">All (<span id="quotation-count-all">0</span>)</button>
+            <button type="button" class="quotation-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Draft">Draft (<span id="quotation-count-draft">0</span>)</button>
+            <button type="button" class="quotation-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Sent">Sent (<span id="quotation-count-sent">0</span>)</button>
+            <button type="button" class="quotation-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Accepted">Accepted (<span id="quotation-count-accepted">0</span>)</button>
+            <button type="button" class="quotation-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Rejected">Rejected (<span id="quotation-count-rejected">0</span>)</button>
+            <button type="button" class="quotation-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Expired">Expired (<span id="quotation-count-expired">0</span>)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-950/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800 text-[11px]">
+                <th class="py-3 px-4">Quote Number &amp; Date</th>
+                <th class="py-3 px-4">Client</th>
+                <th class="py-3 px-3">Valid Until</th>
+                <th class="py-3 px-4 text-right">Total Amount</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="quotation-table-body" class="divide-y divide-slate-800/60 text-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="quotation-editor-view" class="w-full flex flex-col lg:flex-row gap-6 hidden">
+      <div id="quotation-editor-container" class="w-full lg:w-1/2 flex flex-col gap-5">
+        <div class="bg-slate-900/60 backdrop-blur border border-slate-800/80 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 quotation-toolbar">
+          <button type="button" id="btn-back-to-quotations" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 flex items-center gap-1.5 transition">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i><span>All Quotes</span>
+          </button>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="btn-convert-quotation" class="hidden px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white items-center gap-1.5 transition">
+              <i data-lucide="file-plus-2" class="w-3.5 h-3.5"></i><span>Convert to Invoice</span>
+            </button>
+            <button type="button" id="btn-save-quotation" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white flex items-center gap-1.5 transition">
+              <i data-lucide="save" class="w-3.5 h-3.5"></i><span>Save Quote</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="quotation-error" class="hidden rounded-xl border border-rose-700/60 bg-rose-950/40 p-3 text-xs text-rose-200" role="alert"></div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <h2 class="text-sm font-bold tracking-tight text-white uppercase border-b border-slate-800 pb-3 mb-4">Quotation Details</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="invox-label" for="quotation-number">Quote Number *</label>
+              <input id="quotation-number" class="invox-input font-mono font-semibold" maxlength="40" required>
+            </div>
+            <div>
+              <label class="invox-label" for="quotation-status">Status</label>
+              <select id="quotation-status" class="invox-select w-full">
+                <option>Draft</option><option>Sent</option><option>Accepted</option><option>Rejected</option><option>Expired</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="invox-label" for="quotation-client">Saved Client *</label>
+              <select id="quotation-client" class="invox-select w-full" required>
+                <option value="">Select a saved client</option>
+              </select>
+              <p id="quotation-client-empty" class="hidden mt-2 text-[11px] text-amber-300">
+                Save a client in the Invoices module before creating a quotation.
+                <button type="button" id="btn-quotation-manage-clients" class="ml-1 underline hover:text-amber-200">Open Clients</button>
+              </p>
+            </div>
+            <div>
+              <label class="invox-label" for="quotation-date">Quote Date *</label>
+              <input type="date" id="quotation-date" class="invox-input" required>
+            </div>
+            <div>
+              <label class="invox-label" for="quotation-valid-until">Valid Until *</label>
+              <input type="date" id="quotation-valid-until" class="invox-input" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+            <h2 class="text-sm font-bold tracking-tight text-white uppercase">Line Items</h2>
+            <button type="button" id="btn-add-quotation-item" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>Add Item
+            </button>
+          </div>
+          <div id="quotation-items-container" class="flex flex-col gap-3"></div>
+          <div class="mt-4 border-t border-slate-800 pt-3 space-y-2 text-xs">
+            <div class="flex justify-between text-slate-400"><span>Subtotal (before discounts)</span><span id="quotation-subtotal">₹0.00</span></div>
+            <div class="flex justify-between text-slate-400"><span>Discount</span><span id="quotation-discount">−₹0.00</span></div>
+            <div class="flex justify-between text-slate-400"><span>GST</span><span id="quotation-tax">₹0.00</span></div>
+            <div class="flex justify-between border-t border-slate-800 pt-2 text-sm font-bold text-white"><span>Grand Total</span><span id="quotation-grand-total">₹0.00</span></div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+          <div>
+            <label class="invox-label" for="quotation-terms">Terms &amp; Conditions</label>
+            <textarea id="quotation-terms" rows="3" maxlength="3000" class="invox-input resize-y" placeholder="Payment and delivery terms"></textarea>
+          </div>
+          <div>
+            <label class="invox-label" for="quotation-notes">Notes</label>
+            <textarea id="quotation-notes" rows="3" maxlength="3000" class="invox-input resize-y" placeholder="Additional information for your client"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div id="quotation-preview-column" class="w-full lg:w-1/2 flex flex-col gap-3 order-2">
+        <div class="flex items-center justify-between no-print">
+          <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Live Quote Preview</h2>
+          <div class="flex gap-2">
+            <button type="button" id="btn-print-quotation" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>Print
+            </button>
+            <button type="button" id="btn-download-quotation" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>Download PDF
+            </button>
+          </div>
+        </div>
+        <div class="a4-container quote-preview-container bg-slate-900/40 rounded-2xl border border-slate-800/80 shadow-2xl">
+          <article id="quotation-preview-sheet" class="a4-sheet p-8 sm:p-10">
+            <div class="flex justify-between gap-6 border-b border-slate-200 pb-6">
+              <div>
+                <h1 id="qv-business-name" class="text-xl font-bold text-slate-900">Your Business</h1>
+                <p id="qv-business-address" class="mt-2 text-xs text-slate-600 whitespace-pre-line"></p>
+                <p id="qv-business-contact" class="text-xs text-slate-600"></p>
+                <p id="qv-business-tax" class="text-xs text-slate-600"></p>
+              </div>
+              <div class="text-right">
+                <div class="inline-block px-3 py-1 rounded bg-violet-600 text-white text-xs font-black tracking-widest">QUOTATION</div>
+                <p class="mt-3 text-xs text-slate-500">Quote Number</p><p id="qv-number" class="font-mono font-bold text-slate-900"></p>
+                <p class="mt-2 text-xs text-slate-500">Quote Date</p><p id="qv-date" class="text-sm text-slate-800"></p>
+                <p class="mt-2 text-xs text-slate-500">Valid Until</p><p id="qv-valid-until" class="text-sm font-semibold text-slate-800"></p>
+                <span id="qv-status" class="inline-block mt-3 rounded-full border border-slate-300 px-3 py-1 text-[10px] font-bold uppercase text-slate-700"></span>
+              </div>
+            </div>
+            <div class="border-b border-slate-200 py-5">
+              <p class="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Prepared For</p>
+              <h2 id="qv-client-name" class="font-bold text-sm text-slate-900"></h2>
+              <p id="qv-client-company" class="text-xs text-slate-700"></p>
+              <p id="qv-client-address" class="mt-1 text-xs text-slate-600 whitespace-pre-line"></p>
+              <p id="qv-client-contact" class="text-xs text-slate-600"></p>
+              <p id="qv-client-tax" class="text-xs text-slate-600"></p>
+            </div>
+            <div class="py-5">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead><tr class="bg-violet-600 text-white text-[10px] uppercase">
+                  <th class="p-2">Item</th><th class="p-2 text-right">Qty</th><th class="p-2 text-right">Rate</th><th class="p-2 text-right">GST</th><th class="p-2 text-right">Discount</th><th class="p-2 text-right">Amount</th>
+                </tr></thead>
+                <tbody id="qv-items" class="divide-y divide-slate-100 text-slate-700"></tbody>
+              </table>
+            </div>
+            <div class="ml-auto w-full max-w-xs space-y-2 border-t border-slate-200 py-4 text-xs">
+              <div class="flex justify-between text-slate-600"><span>Subtotal</span><span id="qv-subtotal"></span></div>
+              <div class="flex justify-between text-slate-600"><span>Discount</span><span id="qv-discount"></span></div>
+              <div class="flex justify-between text-slate-600"><span>GST</span><span id="qv-tax"></span></div>
+              <div class="flex justify-between border-t border-slate-200 pt-2 text-sm font-bold text-slate-900"><span>Total</span><span id="qv-total"></span></div>
+            </div>
+            <div id="qv-terms-wrap" class="mt-5 border-t border-slate-200 pt-4">
+              <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Terms &amp; Conditions</h3>
+              <p id="qv-terms" class="mt-1 text-[10px] leading-relaxed text-slate-600 whitespace-pre-line"></p>
+            </div>
+            <div id="qv-notes-wrap" class="mt-4">
+              <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Notes</h3>
+              <p id="qv-notes" class="mt-1 text-[10px] leading-relaxed text-slate-600 whitespace-pre-line"></p>
+            </div>
+            <div class="mt-8 border-t border-slate-200 pt-3 text-[10px] text-slate-400 flex justify-between">
+              <span>Thank you for considering our proposal.</span><span>Created with INVOX Studio</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODULE 3: PURCHASE ORDERS MODULE                         -->
+  <!-- ======================================================== -->
+  <main id="module-pos" class="module-section hidden flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
+
+    <!-- SUB-VIEW 1: PO LIST & DIRECTORY -->
+    <section id="po-list-view" class="w-full flex flex-col gap-6">
+      
+      <!-- Top PO List Header & Controls -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <div class="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+                <i data-lucide="package-check" class="w-5 h-5"></i>
+              </div>
+              <h2 class="text-base font-bold text-white tracking-tight">Purchase Orders Directory</h2>
+              <span id="po-total-badge" class="px-2 py-0.5 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">0 Orders</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Manage vendor procurement, order fulfillment, and convert approved POs to invoices with 1 click.</p>
+          </div>
+
+          <div class="flex items-center gap-2.5">
+            <button id="btn-po-create-new" class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-sky-600 via-indigo-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white shadow-lg shadow-sky-600/20 flex items-center gap-2 transition active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Create Purchase Order</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Bar and Status Filters -->
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <!-- Search input -->
+          <div class="relative flex-1 max-w-md">
+            <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3 top-2.5"></i>
+            <input type="text" id="po-search-input" class="invox-input pl-9 !py-2 text-xs" placeholder="Search PO #, vendor name, or email...">
+          </div>
+
+          <!-- Status Filter Tabs -->
+          <div class="flex flex-wrap items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800 text-xs font-medium">
+            <button type="button" class="po-filter-btn px-2.5 py-1 rounded-lg transition bg-indigo-600 text-white font-semibold" data-status="All">
+              All (<span id="count-all">0</span>)
+            </button>
+            <button type="button" class="po-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Draft">
+              Draft (<span id="count-draft">0</span>)
+            </button>
+            <button type="button" class="po-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Sent">
+              Sent (<span id="count-sent">0</span>)
+            </button>
+            <button type="button" class="po-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Approved">
+              Approved (<span id="count-approved">0</span>)
+            </button>
+            <button type="button" class="po-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Received">
+              Received (<span id="count-received">0</span>)
+            </button>
+            <button type="button" class="po-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Closed">
+              Closed (<span id="count-closed">0</span>)
+            </button>
+            <button type="button" class="po-filter-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white" data-status="Cancelled">
+              Cancelled (<span id="count-cancelled">0</span>)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PO List Table Container -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-950/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800 text-[11px]">
+                <th class="py-3 px-4">PO Number & Date</th>
+                <th class="py-3 px-4">Vendor</th>
+                <th class="py-3 px-3">Delivery Date</th>
+                <th class="py-3 px-4 text-right">Total Amount</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="po-table-body" class="divide-y divide-slate-800/60 text-slate-200">
+              <!-- Dynamically populated by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SUB-VIEW 2: PO EDITOR & LIVE A4 PREVIEW (SPLIT SCREEN) -->
+    <section id="po-editor-preview-view" class="w-full flex flex-col lg:flex-row gap-6 hidden">
+      
+      <!-- LEFT: PO FORM EDITOR -->
+      <div id="po-editor-container" class="w-full lg:w-1/2 flex flex-col gap-6 order-1">
+
+        <!-- Top Action Card: Back to list / Save / Draft status -->
+        <div class="bg-slate-900/60 backdrop-blur border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <button id="btn-back-to-po-list" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 flex items-center gap-1.5 transition">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              <span>Back to Orders</span>
+            </button>
+            <button id="btn-new-po" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 flex items-center gap-1.5 transition">
+              <i data-lucide="file-plus" class="w-3.5 h-3.5 text-sky-400"></i>
+              <span>New PO</span>
+            </button>
+            <button id="btn-save-po" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/20 flex items-center gap-1.5 transition">
+              <i data-lucide="save" class="w-3.5 h-3.5"></i>
+              <span>Save Order</span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span class="pulse-dot"></span>
+            <span id="po-draft-status-text" class="text-[11px]">Auto-saved</span>
+          </div>
+        </div>
+
+        <!-- PO CARD 1: VENDOR DETAILS -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+            <div class="flex items-center gap-2.5">
+              <div class="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+                <i data-lucide="store" class="w-4 h-4"></i>
+              </div>
+              <h2 class="text-sm font-bold tracking-tight text-white uppercase">Vendor Details (Supplier)</h2>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <select id="quick-select-vendor" class="invox-select !py-1 !px-2 !text-xs bg-slate-800 border-slate-700 text-slate-300">
+                <option value="">-- Load Saved Vendor --</option>
+              </select>
+              <button id="btn-save-current-vendor" class="text-xs font-medium text-sky-400 hover:text-sky-300 flex items-center gap-1 transition" title="Save this vendor to directory">
+                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Save Vendor</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="invox-label" for="po-vendor-name">Vendor Name / Contact *</label>
+              <input type="text" id="po-vendor-name" class="invox-input font-medium" placeholder="e.g. Acme Hardware Supplies" required>
+            </div>
+            <div>
+              <label class="invox-label" for="po-vendor-company">Vendor Company</label>
+              <input type="text" id="po-vendor-company" class="invox-input" placeholder="e.g. Acme Industrial Solutions Ltd.">
+            </div>
+            <div>
+              <label class="invox-label" for="po-vendor-email">Vendor Email</label>
+              <input type="email" id="po-vendor-email" class="invox-input" placeholder="orders@acmehardware.com">
+            </div>
+            <div>
+              <label class="invox-label" for="po-vendor-phone">Vendor Phone</label>
+              <input type="text" id="po-vendor-phone" class="invox-input" placeholder="+91 98765 11223">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="invox-label" for="po-vendor-address">Vendor Address</label>
+              <textarea id="po-vendor-address" rows="2" class="invox-input resize-none" placeholder="Plot 12, Industrial Estate, Phase 2, Pune, Maharashtra 411018"></textarea>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="invox-label" for="po-vendor-tax-id">Vendor GSTIN / Tax ID</label>
+              <input type="text" id="po-vendor-tax-id" class="invox-input uppercase font-mono" placeholder="27AABCA5566K1Z9">
+            </div>
+          </div>
+        </div>
+
+        <!-- PO CARD 2: PO DATES & TERMS -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+            <div class="flex items-center gap-2.5">
+              <div class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+              </div>
+              <h2 class="text-sm font-bold tracking-tight text-white uppercase">Order Info & Dates</h2>
+            </div>
+            <!-- PO Status Selector -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400">Status:</span>
+              <select id="po-status" class="invox-select !py-1 !px-2 !text-xs font-semibold bg-slate-800 border-slate-700 text-slate-200">
+                <option value="Draft">Draft</option>
+                <option value="Sent" selected>Sent</option>
+                <option value="Approved">Approved</option>
+                <option value="Received">Received</option>
+                <option value="Closed">Closed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="invox-label mb-0" for="po-number">PO Number *</label>
+                <button type="button" id="btn-next-po-no" class="text-[10px] text-sky-400 hover:text-sky-300 font-semibold" title="Generate next PO number">Next #</button>
+              </div>
+              <input type="text" id="po-number" class="invox-input font-mono font-semibold" value="PO-2026-001" required>
+            </div>
+            <div>
+              <label class="invox-label" for="po-order-date">Order Date *</label>
+              <input type="date" id="po-order-date" class="invox-input" required>
+            </div>
+            <div>
+              <label class="invox-label" for="po-delivery-date">Expected Delivery Date</label>
+              <input type="date" id="po-delivery-date" class="invox-input">
+            </div>
+
+            <!-- Quick Delivery Presets -->
+            <div class="sm:col-span-2 md:col-span-3 flex flex-wrap items-center gap-2 pt-1">
+              <span class="text-xs text-slate-400">Quick Delivery:</span>
+              <button type="button" class="po-due-preset-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-300 border border-slate-700 transition" data-days="0">Today</button>
+              <button type="button" class="po-due-preset-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-300 border border-slate-700 transition" data-days="7">+7 Days</button>
+              <button type="button" class="po-due-preset-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-300 border border-slate-700 transition" data-days="15">+15 Days</button>
+              <button type="button" class="po-due-preset-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-300 border border-slate-700 transition" data-days="30">+30 Days</button>
+            </div>
+
+            <div class="sm:col-span-2 md:col-span-3">
+              <label class="invox-label" for="po-payment-terms">Payment Terms</label>
+              <input type="text" id="po-payment-terms" class="invox-input" placeholder="e.g. Net 30 Days after goods receipt and inspection">
+            </div>
+          </div>
+        </div>
+
+        <!-- PO CARD 3: SHIPPING & DELIVERY DESTINATION -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+            <div class="flex items-center gap-2.5">
+              <div class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                <i data-lucide="truck" class="w-4 h-4"></i>
+              </div>
+              <h2 class="text-sm font-bold tracking-tight text-white uppercase">Delivery & Ship-To Destination</h2>
+            </div>
+            <label class="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+              <input type="checkbox" id="po-same-address-toggle" checked class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0">
+              <span>Same as my Business Address</span>
+            </label>
+          </div>
+
+          <div>
+            <label class="invox-label" for="po-delivery-address">Delivery Address</label>
+            <textarea id="po-delivery-address" rows="2" class="invox-input resize-none" placeholder="Warehouse / Office delivery location"></textarea>
+          </div>
+        </div>
+
+        <!-- PO CARD 4: LINE ITEMS -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+            <div class="flex items-center gap-2.5">
+              <div class="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+                <i data-lucide="layers" class="w-4 h-4"></i>
+              </div>
+              <h2 class="text-sm font-bold tracking-tight text-white uppercase">PO Items & Deliverables</h2>
+            </div>
+            <button id="btn-clear-po-items" class="text-xs text-rose-400 hover:text-rose-300 transition" title="Clear all items">Clear All</button>
+          </div>
+
+          <!-- PO Line Items Table / Rows Container -->
+          <div id="po-line-items-container" class="flex flex-col gap-3">
+            <!-- Dynamically populated by app.js -->
+          </div>
+
+          <!-- Add Item Button -->
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+            <button type="button" id="btn-add-po-item" class="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/20 flex items-center gap-2 transition active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Add Item</span>
+            </button>
+
+            <span class="text-xs text-slate-400">
+              Total items: <span id="po-items-count" class="font-bold text-white">0</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- PO CARD 5: TAXES, DISCOUNTS & FREIGHT -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80">
+          <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-slate-800">
+            <div class="p-1.5 rounded-lg bg-violet-500/10 text-violet-400">
+              <i data-lucide="calculator" class="w-4 h-4"></i>
+            </div>
+            <h2 class="text-sm font-bold tracking-tight text-white uppercase">Taxes, Extra Discount & Freight</h2>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <label class="invox-label" for="po-tax-type-select">Tax / GST Mode</label>
+              <select id="po-tax-type-select" class="invox-select w-full">
+                <option value="intra" selected>Intra-State (CGST + SGST 50/50)</option>
+                <option value="inter">Inter-State (IGST)</option>
+                <option value="single">Standard Single Tax</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="invox-label">Extra Overall Discount</label>
+              <div class="flex gap-2">
+                <input type="number" id="po-extra-discount-val" class="invox-input" placeholder="0" min="0" step="any">
+                <select id="po-extra-discount-type" class="invox-select !px-2 w-20">
+                  <option value="%" selected>%</option>
+                  <option value="flat">Flat</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="invox-label" for="po-shipping-charges">Freight / Shipping Charges</label>
+              <input type="number" id="po-shipping-charges" class="invox-input font-mono" placeholder="0" min="0" step="any">
+            </div>
+
+            <div class="sm:col-span-2 md:col-span-3 flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/80">
+              <div>
+                <span class="text-xs font-semibold text-slate-200">Auto Round-off Total PO Amount</span>
+                <p class="text-[11px] text-slate-400">Rounds the grand total to the nearest whole integer</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="po-auto-roundoff-toggle" class="sr-only peer" checked>
+                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- PO CARD 6: TERMS, NOTES & PROCUREMENT SIGNATORY -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl transition-all hover:border-slate-700/80 mb-6">
+          <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-slate-800">
+            <div class="p-1.5 rounded-lg bg-pink-500/10 text-pink-400">
+              <i data-lucide="file-signature" class="w-4 h-4"></i>
+            </div>
+            <h2 class="text-sm font-bold tracking-tight text-white uppercase">Instructions & Sign-off</h2>
+          </div>
+
+          <div class="grid grid-cols-1 gap-3">
+            <div>
+              <label class="invox-label" for="po-notes">Special Instructions & Shipping Notes</label>
+              <textarea id="po-notes" rows="2" class="invox-input resize-none" placeholder="Please mention PO number on all shipping labels and packaging lists."></textarea>
+            </div>
+            <div>
+              <label class="invox-label" for="po-terms">PO Terms & Conditions</label>
+              <textarea id="po-terms" rows="2" class="invox-input resize-none" placeholder="1. Goods are subject to inspection and approval. 2. Any damaged goods must be replaced promptly by vendor."></textarea>
+            </div>
+            <div>
+              <label class="invox-label" for="po-signatory-name">Procurement Officer / Authorized Signatory</label>
+              <input type="text" id="po-signatory-name" class="invox-input" placeholder="Procurement Officer">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: LIVE A4 PURCHASE ORDER PREVIEW -->
+      <div id="po-preview-container" class="w-full lg:w-1/2 flex flex-col gap-4 order-2 hidden lg:flex">
+        
+        <!-- PO Preview Toolbar -->
+        <div id="po-controls-toolbar" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-lg no-print">
+          <div class="flex items-center gap-2">
+            <span class="pulse-dot"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Live PO Preview</span>
+          </div>
+
+          <div class="flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
+            <span class="text-[10px] uppercase font-bold text-slate-400 px-1">Theme:</span>
+            <button type="button" class="po-theme-btn w-5 h-5 rounded-full ring-2 ring-white ring-offset-2 ring-offset-slate-900 transition" data-theme="indigo" title="Indigo Modern" aria-label="Indigo Modern theme" aria-pressed="true"></button>
+            <button type="button" class="po-theme-btn w-5 h-5 rounded-full hover:scale-105 transition" data-theme="emerald" title="Emerald Finance" aria-label="Emerald Finance theme" aria-pressed="false"></button>
+            <button type="button" class="po-theme-btn w-5 h-5 rounded-full hover:scale-105 transition" data-theme="navy" title="Classic Navy" aria-label="Classic Navy theme" aria-pressed="false"></button>
+            <button type="button" class="po-theme-btn w-5 h-5 rounded-full hover:scale-105 transition" data-theme="ruby" title="Ruby Rose" aria-label="Ruby Rose theme" aria-pressed="false"></button>
+            <button type="button" class="po-theme-btn w-5 h-5 rounded-full hover:scale-105 transition" data-theme="charcoal" title="Sleek Charcoal" aria-label="Sleek Charcoal theme" aria-pressed="false"></button>
+            <button type="button" class="po-theme-btn w-5 h-5 rounded-full hover:scale-105 transition" data-theme="obsidian" title="Obsidian Dark" aria-label="Obsidian Dark theme" aria-pressed="false"></button>
+          </div>
+
+          <!-- Zoom Controls -->
+          <div class="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800 text-xs">
+            <button id="btn-po-zoom-out" class="p-1 rounded hover:bg-slate-800 text-slate-300 transition" title="Zoom Out">
+              <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+            </button>
+            <span id="po-zoom-level-text" class="px-1 text-[11px] font-mono text-slate-300 font-semibold min-w-[38px] text-center">85%</span>
+            <button id="btn-po-zoom-in" class="p-1 rounded hover:bg-slate-800 text-slate-300 transition" title="Zoom In">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            </button>
+            <button id="btn-po-zoom-reset" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-[10px] text-slate-400 transition" title="Fit Screen">Fit</button>
+          </div>
+        </div>
+
+        <!-- A4 PO Preview Sheet Container -->
+        <div class="a4-container bg-slate-900/40 rounded-2xl border border-slate-800/80 shadow-2xl flex-1 max-h-[calc(100vh-140px)] sticky top-20">
+          
+          <!-- THE PO A4 SHEET -->
+          <article id="po-preview-sheet" class="a4-sheet p-8 sm:p-10" data-theme="indigo">
+            
+            <!-- HEADER -->
+            <div class="flex flex-row justify-between items-start gap-6 pb-6 border-b border-slate-200">
+              <div class="flex flex-col gap-2 max-w-[60%]">
+                <div id="pv-po-logo-container" class="hidden mb-2">
+                  <img id="pv-po-logo-img" src="" alt="Business Logo" class="max-h-16 max-w-[200px] object-contain">
+                </div>
+                <h1 id="pv-po-sender-name" class="text-xl font-bold tracking-tight text-slate-900">Your Business Name</h1>
+                <div class="text-xs text-slate-600 space-y-0.5">
+                  <p id="pv-po-sender-address" class="whitespace-pre-line leading-relaxed">123 Business Street, Tech District, City</p>
+                  <p id="pv-po-sender-contact">contact@yourbusiness.com | +91 98765 43210</p>
+                  <p id="pv-po-sender-tax" class="font-mono font-semibold text-slate-700">GSTIN: 29ABCDE1234F1Z5</p>
+                </div>
+              </div>
+
+              <!-- Right: PO Title & Meta -->
+              <div class="flex flex-col items-end text-right">
+                <div class="inline-block px-3 py-1 rounded text-xs font-black tracking-widest uppercase invoice-accent-bg mb-2">
+                  PURCHASE ORDER
+                </div>
+                <div class="text-xs text-slate-700 space-y-1 font-mono">
+                  <div class="flex justify-end gap-3">
+                    <span class="text-slate-400 uppercase font-sans text-[10px] tracking-wider">PO Number:</span>
+                    <span id="pv-po-number" class="font-bold text-slate-900">PO-2026-001</span>
+                  </div>
+                  <div class="flex justify-end gap-3">
+                    <span class="text-slate-400 uppercase font-sans text-[10px] tracking-wider">Order Date:</span>
+                    <span id="pv-po-order-date">2026-10-31</span>
+                  </div>
+                  <div class="flex justify-end gap-3">
+                    <span class="text-slate-400 uppercase font-sans text-[10px] tracking-wider">Delivery Date:</span>
+                    <span id="pv-po-delivery-date" class="font-semibold text-slate-900">2026-11-15</span>
+                  </div>
+                </div>
+
+                <!-- Status Stamp -->
+                <div id="pv-po-status-stamp" class="mt-3 px-3 py-0.5 rounded-full border text-[11px] font-black uppercase tracking-wider border-sky-500 bg-sky-50 text-sky-700">
+                  SENT
+                </div>
+              </div>
+            </div>
+
+            <!-- VENDOR & DELIVERY INFO -->
+            <div class="grid grid-cols-2 gap-6 py-5 border-b border-slate-200 text-xs">
+              <!-- Vendor Box -->
+              <div>
+                <span class="font-bold uppercase tracking-wider text-[10px] text-slate-400 block mb-1">Vendor / Supplier</span>
+                <h2 id="pv-po-vendor-name" class="font-bold text-sm text-slate-900">Vendor Name</h2>
+                <p id="pv-po-vendor-company" class="font-medium text-slate-700">Vendor Company</p>
+                <p id="pv-po-vendor-address" class="text-slate-600 whitespace-pre-line leading-relaxed mt-1">Vendor Address, City, State</p>
+                <p id="pv-po-vendor-contact" class="text-slate-500 mt-1">vendor@example.com | +91 98765 11223</p>
+                <p id="pv-po-vendor-tax" class="font-mono text-slate-700 mt-0.5">GSTIN: 27AABCA5566K1Z9</p>
+              </div>
+
+              <!-- Ship To Box -->
+              <div>
+                <span class="font-bold uppercase tracking-wider text-[10px] text-slate-400 block mb-1">Ship To / Delivery Destination</span>
+                <p id="pv-po-delivery-address" class="text-slate-600 whitespace-pre-line leading-relaxed">Same as business address</p>
+                <div class="mt-2 text-slate-600">
+                  <span class="font-bold text-[10px] uppercase tracking-wider text-slate-400 block">Payment Terms:</span>
+                  <p id="pv-po-payment-terms" class="text-[11px]">Net 30 Days</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- PO LINE ITEMS TABLE -->
+            <div class="py-5">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="invoice-accent-bg text-white font-bold text-[11px] uppercase tracking-wider">
+                    <th class="py-2.5 px-3 rounded-l">#</th>
+                    <th class="py-2.5 px-3">Item Description</th>
+                    <th class="py-2.5 px-2 text-right">Qty</th>
+                    <th class="py-2.5 px-3 text-right">Unit Rate</th>
+                    <th class="py-2.5 px-2 text-right">Tax</th>
+                    <th class="py-2.5 px-2 text-right">Disc</th>
+                    <th class="py-2.5 px-3 text-right rounded-r">Line Total</th>
+                  </tr>
+                </thead>
+                <tbody id="pv-po-line-items-body" class="divide-y divide-slate-100 text-slate-700">
+                  <!-- Dynamically rendered -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- FINANCIAL SUMMARY -->
+            <div class="grid grid-cols-12 gap-6 py-4 border-t border-slate-200">
+              <div class="col-span-7 flex flex-col justify-between gap-4 text-xs">
+                <!-- Amount In Words Box -->
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">Total PO Value In Words</span>
+                  <p id="pv-po-amount-in-words" class="font-semibold text-slate-800 leading-snug">Indian Rupees Zero Only</p>
+                </div>
+                <!-- Shipping Notes -->
+                <div id="pv-po-notes-box" class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">Shipping Instructions & Notes</span>
+                  <p id="pv-po-notes-text" class="text-slate-600 text-[11px] leading-relaxed">Please ensure proper packaging and dispatch documentation.</p>
+                </div>
+              </div>
+
+              <!-- Right: Totals -->
+              <div class="col-span-5 flex flex-col justify-between text-xs">
+                <div class="space-y-1.5 text-slate-700">
+                  <div class="flex justify-between py-1">
+                    <span class="text-slate-500">Items Subtotal:</span>
+                    <span id="pv-po-items-subtotal" class="font-mono font-semibold text-slate-800">₹0.00</span>
+                  </div>
+                  <div id="pv-po-item-discount-row" class="flex justify-between py-0.5 text-emerald-600">
+                    <span>Item Discounts:</span>
+                    <span id="pv-po-items-discount" class="font-mono font-medium">-₹0.00</span>
+                  </div>
+                  <div id="pv-po-extra-discount-row" class="flex justify-between py-0.5 text-emerald-600">
+                    <span>Extra Discount:</span>
+                    <span id="pv-po-extra-discount" class="font-mono font-medium">-₹0.00</span>
+                  </div>
+                  
+                  <!-- Tax breakdown -->
+                  <div id="pv-po-tax-breakdown-container" class="space-y-0.5 py-1 border-t border-b border-slate-100 text-[11px]">
+                  </div>
+
+                  <div id="pv-po-shipping-row" class="flex justify-between py-0.5">
+                    <span class="text-slate-500">Freight & Shipping:</span>
+                    <span id="pv-po-shipping-amount" class="font-mono font-semibold text-slate-800">₹0.00</span>
+                  </div>
+                  <div id="pv-po-roundoff-row" class="flex justify-between py-0.5 text-slate-500 text-[11px]">
+                    <span>Round Off:</span>
+                    <span id="pv-po-roundoff-amount" class="font-mono">₹0.00</span>
+                  </div>
+                </div>
+
+                <!-- Grand Total Banner -->
+                <div class="mt-3 p-3 rounded-xl invoice-accent-light-bg border invoice-accent-border flex justify-between items-center">
+                  <span class="text-xs font-bold uppercase tracking-wider invoice-accent-text">Total PO Value:</span>
+                  <span id="pv-po-grand-total" class="text-lg font-black font-mono invoice-accent-text">₹0.00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TERMS & SIGNATURE -->
+            <div class="mt-auto pt-4 border-t border-slate-200 grid grid-cols-12 gap-6 text-xs">
+              <div class="col-span-8 space-y-2">
+                <div id="pv-po-terms-box">
+                  <span class="font-bold text-[10px] uppercase tracking-wider text-slate-400 block mb-0.5">Terms & Conditions</span>
+                  <p id="pv-po-terms-text" class="text-slate-500 leading-relaxed text-[10px]">1. Goods subject to inspection on delivery. 2. Payment made according to agreed terms.</p>
+                </div>
+              </div>
+
+              <div class="col-span-4 flex flex-col items-center justify-end text-center">
+                <div class="w-full border-t border-slate-300 pt-1 mt-6">
+                  <p id="pv-po-signatory-name" class="font-bold text-[11px] text-slate-800">Procurement Officer</p>
+                  <p class="text-[9px] text-slate-400 uppercase tracking-wider">Authorized Buyer Signature</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+              <span>Official Purchase Order</span>
+              <span class="font-medium">Created with INVOX Studio</span>
+            </div>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODALS                                                   -->
+  <!-- ======================================================== -->
+
+  <!-- SAVED CLIENTS MODAL -->
+  <div id="modal-clients" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+            <i data-lucide="users" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Saved Clients Directory</h3>
+        </div>
+        <button class="btn-close-modal p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-4 flex-1 overflow-y-auto space-y-3">
+        <input type="text" id="client-search-input" class="invox-input text-xs" placeholder="Search clients by name, email, or company...">
+        <div id="saved-clients-list" class="flex flex-col gap-2">
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex justify-end">
+        <button class="btn-close-modal px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVED VENDORS MODAL -->
+  <div id="modal-vendors" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+            <i data-lucide="store" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Saved Vendors Directory</h3>
+        </div>
+        <button class="btn-close-modal p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-4 flex-1 overflow-y-auto space-y-3">
+        <input type="text" id="vendor-search-input" class="invox-input text-xs" placeholder="Search vendors by name, company, or email...">
+        <div id="saved-vendors-list" class="flex flex-col gap-2">
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex justify-end">
+        <button class="btn-close-modal px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVED INVOICES / HISTORY MODAL -->
+  <div id="modal-invoices" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
+            <i data-lucide="folder-clock" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Invoice History & Backups</h3>
+        </div>
+        <button class="btn-close-modal p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-4 flex items-center justify-between gap-3 border-b border-slate-800/60 bg-slate-950/40">
+        <input type="text" id="modal-invoice-search-input" class="invox-input text-xs flex-1" placeholder="Search by invoice # or client name...">
+        
+        <div class="flex items-center gap-2">
+          <button id="btn-export-backup" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition" title="Export JSON Backup">
+            Export JSON
+          </button>
+          <label class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 cursor-pointer transition" title="Import JSON Backup">
+            <span>Import JSON</span>
+            <input type="file" id="import-json-input" accept=".json" class="hidden">
+          </label>
+        </div>
+      </div>
+
+      <div class="p-4 flex-1 overflow-y-auto space-y-2">
+        <div id="saved-invoices-list" class="flex flex-col gap-2">
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex justify-end">
+        <button class="btn-close-modal px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="no-print"></div>
+
+  <!-- CORE SCRIPTS -->
+  <script src="js/calculations.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/pdf-export.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/quotations.js"></script>
+
+  <!-- User Studio Header Sync -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await window.InvoxAuth?.whenReady();
+      const user = window.InvoxAuth?.getCurrentUser();
+      if (user) {
+        const initials = (user.displayName || 'U').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        const avatarEl = document.getElementById('studio-user-avatar');
+        const nameEl = document.getElementById('studio-dropdown-name');
+        const emailEl = document.getElementById('studio-dropdown-email');
+        if (avatarEl) avatarEl.textContent = initials;
+        if (nameEl) nameEl.textContent = user.displayName || 'User';
+        if (emailEl) emailEl.textContent = user.email || '';
+      }
+
+      // Dropdown toggle
+      const menuBtn = document.getElementById('btn-studio-user-menu');
+      const dropdown = document.getElementById('studio-user-dropdown');
+      if (menuBtn && dropdown) {
+        menuBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', (e) => {
+          if (!dropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+            dropdown.classList.add('hidden');
+          }
+        });
+      }
+
+      // Sign out without deleting the account or its workspace data.
+      document.getElementById('btn-studio-logout')?.addEventListener('click', async () => {
+        if (!window.InvoxAuth) return;
+        try {
+          await window.InvoxAuth.signOut();
+          window.location.replace('index.html');
+        } catch (error) {
+          alert(`Could not sign out: ${error.message}`);
+        }
+      });
+    });
+  </script>
+  <script type="module" src="js/dist/app-motion.js"></script>
+</body>
+</html>

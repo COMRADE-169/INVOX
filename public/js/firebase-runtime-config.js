@@ -1,0 +1,1 @@
+window.INVOX_FIREBASE_CONFIG = {"apiKey":"AIzaSyCrq5IQ6rxIRnOwSQShOH5xU53ZovSsBwg","authDomain":"invox-ab91c.firebaseapp.com","projectId":"invox-ab91c","storageBucket":"invox-ab91c.firebasestorage.app","messagingSenderId":"1055919341947","appId":"1:1055919341947:web:ed3f4a906d115ae4a23dde"};

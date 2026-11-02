@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Settings &amp; Business Profile — INVOX</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- ======================================================== -->
+  <!-- NAVBAR                                                   -->
+  <!-- ======================================================== -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Logo & Back to Studio -->
+      <div class="flex items-center gap-4">
+        <a href="app.html" class="flex items-center gap-2 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-1 ring-white/20">
+            <i data-lucide="receipt" class="w-4 h-4 text-white stroke-[2.5]"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">INVOX</span>
+              <span class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-indigo-500/20 text-indigo-300">Settings</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="app.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700 transition">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span>Back to Studio</span>
+        </a>
+      </div>
+
+      <!-- User Info & Controls -->
+      <div class="flex items-center gap-3">
+        <!-- Theme Toggle -->
+        <button type="button" class="theme-toggle-btn p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800 transition" title="Toggle Theme">
+          <i data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
+        </button>
+
+        <!-- User Badge -->
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-800/60 border border-slate-700/60 text-xs">
+          <div id="nav-user-avatar" class="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-[10px] text-white">
+            U
+          </div>
+          <span id="nav-user-name" class="font-semibold text-slate-200">Loading...</span>
+        </div>
+
+        <button type="button" id="btn-logout" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 text-xs font-semibold transition" title="Sign Out">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          <span>Sign Out</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- MAIN SETTINGS CONTAINER                                  -->
+  <!-- ======================================================== -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full flex-1">
+    
+    <!-- Page Header -->
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-6">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Account &amp; Business Profile</h1>
+        <p class="text-xs sm:text-sm text-slate-400 mt-1">
+          Manage your personal details, invoice defaults, business logo, and security credentials.
+        </p>
+      </div>
+
+      <!-- Isolation Indicator Badge -->
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs">
+        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+        <div>
+          <p class="font-bold text-[11px] leading-tight">Isolated Account</p>
+          <p class="text-[9px] text-slate-400" id="badge-user-uid">UID: loading...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layout Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left Column: Navigation Pills -->
+      <div class="lg:col-span-3 space-y-1">
+        <button type="button" class="tab-btn w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-sm" data-tab="tab-business">
+          <i data-lucide="building-2" class="w-4 h-4"></i>
+          <span>Business Details &amp; Logo</span>
+        </button>
+
+        <button type="button" class="tab-btn w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:text-white hover:bg-slate-800/60" data-tab="tab-account">
+          <i data-lucide="user" class="w-4 h-4"></i>
+          <span>Personal Account</span>
+        </button>
+
+        <button type="button" class="tab-btn w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:text-white hover:bg-slate-800/60" data-tab="tab-security">
+          <i data-lucide="key-round" class="w-4 h-4"></i>
+          <span>Change Password</span>
+        </button>
+
+        <button type="button" class="tab-btn w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:text-white hover:bg-slate-800/60" data-tab="tab-data">
+          <i data-lucide="database" class="w-4 h-4"></i>
+          <span>Workspace Data Backup</span>
+        </button>
+      </div>
+
+      <!-- Right Column: Tab Panels -->
+      <div class="lg:col-span-9">
+        
+        <!-- ==================================================== -->
+        <!-- TAB 1: BUSINESS DETAILS & LOGO                       -->
+        <!-- ==================================================== -->
+        <section id="tab-business" class="tab-pane space-y-6">
+          
+          <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 landing-card">
+            
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div>
+                <h2 class="text-base font-bold text-white">Business Information</h2>
+                <p class="text-xs text-slate-400 mt-0.5">These details automatically populate all new Invoices and Purchase Orders.</p>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300">Live Sync</span>
+            </div>
+
+            <!-- Business Logo Upload & Preview Area -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-2">Business Logo</label>
+              
+              <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                <!-- Logo Preview Box -->
+                <div class="relative w-24 h-24 rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0">
+                  <img id="logo-preview-img" src="" alt="Business Logo" class="max-w-full max-h-full object-contain hidden">
+                  <div id="logo-placeholder" class="text-center p-2 text-slate-500">
+                    <i data-lucide="image" class="w-6 h-6 mx-auto mb-1"></i>
+                    <span class="text-[9px] block">No logo</span>
+                  </div>
+                </div>
+
+                <div class="space-y-2 flex-1">
+                  <div class="flex items-center gap-2">
+                    <label for="logo-file-input" class="cursor-pointer px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition">
+                      Upload New Logo
+                    </label>
+                    <input type="file" id="logo-file-input" accept="image/png, image/jpeg, image/svg+xml, image/webp" class="hidden">
+                    <button type="button" id="btn-remove-logo" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/50 hover:text-rose-400 text-slate-300 text-xs font-medium border border-slate-700 transition">
+                      Remove
+                    </button>
+                  </div>
+                  <p class="text-[11px] text-slate-400 leading-relaxed">
+                    Recommended: PNG, JPG, or SVG with transparent background (Max 2MB).
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Business Form Fields -->
+            <form id="form-business-details" class="space-y-4 text-xs">
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-semibold text-slate-300 mb-1" for="biz-trade-name">Business / Trade Name</label>
+                  <input type="text" id="biz-trade-name" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Acme Design Studio">
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-300 mb-1" for="biz-legal-name">Legal Entity Name</label>
+                  <input type="text" id="biz-legal-name" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Acme Technologies Pvt Ltd">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-semibold text-slate-300 mb-1" for="biz-email">Billing Email</label>
+                  <input type="email" id="biz-email" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500" placeholder="billing@acme.com">
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-300 mb-1" for="biz-phone">Phone Number</label>
+                  <input type="text" id="biz-phone" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500" placeholder="+91 98765 43210">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-semibold text-slate-300 mb-1" for="biz-tax-number">GSTIN / Tax Registration No.</label>
+                  <input type="text" id="biz-tax-number" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 29ABCDE1234F1Z5">
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-300 mb-1" for="biz-currency">Default Invoicing Currency</label>
+                  <select id="biz-currency" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500">
+                    <option value="INR">INR (₹) - Indian Rupee</option>
+                    <option value="USD">USD ($) - US Dollar</option>
+                    <option value="EUR">EUR (€) - Euro</option>
+                    <option value="GBP">GBP (£) - British Pound</option>
+                    <option value="AED">AED (د.إ) - UAE Dirham</option>
+                    <option value="CAD">CAD ($) - Canadian Dollar</option>
+                    <option value="AUD">AUD ($) - Australian Dollar</option>
+                    <option value="SGD">SGD ($) - Singapore Dollar</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1" for="biz-upi-id">
+                  UPI ID (For Instant Scan &amp; Pay QR Codes)
+                </label>
+                <div class="relative">
+                  <input type="text" id="biz-upi-id" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500 pl-9" placeholder="e.g. yourname@okhdfcbank">
+                  <i data-lucide="qr-code" class="w-4 h-4 text-emerald-400 absolute left-3 top-2.5"></i>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1">This UPI ID is dynamically encoded into QR codes on invoices so clients can pay instantly.</p>
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1" for="biz-address">Business Address</label>
+                <textarea id="biz-address" rows="3" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500 resize-y" placeholder="Street Address, City, State, Postal Code, Country"></textarea>
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1" for="biz-notes">Default Invoice Notes / Payment Terms</label>
+                <textarea id="biz-notes" rows="2" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500 resize-y" placeholder="e.g. Payment due within 15 days of issue. Please mention invoice number in transfer notes."></textarea>
+              </div>
+
+              <div class="pt-3 flex justify-end">
+                <button type="submit" id="btn-save-business" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition flex items-center gap-2">
+                  <i data-lucide="save" class="w-4 h-4"></i>
+                  <span>Save Business Details</span>
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+
+        </section>
+
+        <!-- ==================================================== -->
+        <!-- TAB 2: PERSONAL ACCOUNT                              -->
+        <!-- ==================================================== -->
+        <section id="tab-account" class="tab-pane hidden space-y-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 landing-card">
+            
+            <div class="border-b border-slate-800 pb-4">
+              <h2 class="text-base font-bold text-white">Account Details</h2>
+              <p class="text-xs text-slate-400 mt-0.5">Your personal credentials and verified identity.</p>
+            </div>
+
+            <form id="form-account-details" class="space-y-4 text-xs">
+              
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1" for="acc-name">Full Name</label>
+                <input type="text" id="acc-name" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500" required>
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1" for="acc-email">Email Address</label>
+                <div class="relative">
+                  <input type="email" id="acc-email" class="w-full px-3.5 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-slate-400 text-xs cursor-not-allowed" readonly>
+                  <span class="absolute right-3 top-2.5 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                    <i data-lucide="check-circle-2" class="w-3 h-3"></i> Verified
+                  </span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1">To change your primary email, contact security support.</p>
+              </div>
+
+              <div class="pt-3 flex justify-end">
+                <button type="submit" id="btn-save-account" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2">
+                  <i data-lucide="save" class="w-4 h-4"></i>
+                  <span>Update Account Name</span>
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </section>
+
+        <!-- ==================================================== -->
+        <!-- TAB 3: SECURITY (CHANGE PASSWORD)                    -->
+        <!-- ==================================================== -->
+        <section id="tab-security" class="tab-pane hidden space-y-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 landing-card">
+            
+            <div class="border-b border-slate-800 pb-4">
+              <h2 class="text-base font-bold text-white">Change Password</h2>
+              <p class="text-xs text-slate-400 mt-0.5">Keep your account secure by using a strong, unique password.</p>
+            </div>
+
+            <form id="form-change-password" class="space-y-4 text-xs" novalidate>
+              
+              <!-- Current Password -->
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1" for="pwd-current">Current Password</label>
+                <div class="relative">
+                  <input type="password" id="pwd-current" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500 pr-10" placeholder="••••••••" required>
+                  <button type="button" class="btn-toggle-pwd absolute right-3 top-2.5 text-slate-400 hover:text-white" data-target="pwd-current">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- New Password with Strength Meter -->
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1" for="pwd-new">New Password</label>
+                <div class="relative">
+                  <input type="password" id="pwd-new" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500 pr-10" placeholder="Minimum 8 characters" required>
+                  <button type="button" class="btn-toggle-pwd absolute right-3 top-2.5 text-slate-400 hover:text-white" data-target="pwd-new">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+
+                <div class="mt-2 space-y-1">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-slate-400">Strength:</span>
+                    <span id="pwd-strength-label" class="font-bold text-slate-500">None</span>
+                  </div>
+                  <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="pwd-strength-bar" class="h-full w-0 bg-slate-700 transition-all duration-300"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Confirm New Password -->
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1" for="pwd-confirm">Confirm New Password</label>
+                <div class="relative">
+                  <input type="password" id="pwd-confirm" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500 pr-10" placeholder="Re-enter new password" required>
+                  <button type="button" class="btn-toggle-pwd absolute right-3 top-2.5 text-slate-400 hover:text-white" data-target="pwd-confirm">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="pt-3 flex justify-end">
+                <button type="submit" id="btn-save-password" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2">
+                  <i data-lucide="lock" class="w-4 h-4"></i>
+                  <span>Update Password</span>
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </section>
+
+        <!-- ==================================================== -->
+        <!-- TAB 4: WORKSPACE DATA & ISOLATION                    -->
+        <!-- ==================================================== -->
+        <section id="tab-data" class="tab-pane hidden space-y-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 landing-card">
+            
+            <div class="border-b border-slate-800 pb-4">
+              <h2 class="text-base font-bold text-white">Multi-Tenant Data Isolation</h2>
+              <p class="text-xs text-slate-400 mt-0.5">Your invoices, quotations, clients, and purchase orders are strictly partitioned to your account.</p>
+            </div>
+
+            <!-- Workspace Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+              <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800">
+                <p class="text-slate-400">Saved Invoices</p>
+                <p id="stat-invoices-count" class="text-2xl font-extrabold text-indigo-400 font-mono mt-1">0</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800">
+                <p class="text-slate-400">Purchase Orders</p>
+                <p id="stat-pos-count" class="text-2xl font-extrabold text-emerald-400 font-mono mt-1">0</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800">
+                <p class="text-slate-400">Quotes</p>
+                <p id="stat-quotations-count" class="text-2xl font-extrabold text-sky-400 font-mono mt-1">0</p>
+                <p id="stat-quotations-value" class="text-[11px] text-slate-500 mt-1 break-words">Total value: ₹0.00</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800">
+                <p class="text-slate-400">Saved Clients</p>
+                <p id="stat-clients-count" class="text-2xl font-extrabold text-amber-400 font-mono mt-1">0</p>
+              </div>
+            </div>
+
+            <!-- Data Export & Import -->
+            <div class="pt-4 space-y-3">
+              <h3 class="text-xs font-bold text-slate-300">Backup &amp; Migration</h3>
+              <div class="flex flex-wrap gap-3">
+                <button type="button" id="btn-export-backup" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-2">
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                  <span>Export Account Backup (JSON)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="pt-6 border-t border-slate-800/80 space-y-3">
+              <h3 class="text-xs font-bold text-rose-400">Danger Zone</h3>
+              <p class="text-[11px] text-slate-400">
+                Clearing your workspace will delete all local invoices, purchase orders, and clients associated with this account.
+              </p>
+              <button type="button" id="btn-clear-workspace" class="px-4 py-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 text-xs font-semibold transition flex items-center gap-1.5">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <span>Clear Workspace Data</span>
+              </button>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="no-print"></div>
+
+  <!-- Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-runtime-config.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js?v=20261102-google-redirect"></script>
+  <script src="js/calculations.js"></script>
+  <script src="js/storage.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Enforce Authentication Guard
+    await window.InvoxAuth?.whenReady();
+    if (window.InvoxAuth && !window.InvoxAuth.requireAuth('profile.html')) {
+        return;
+      }
+
+      // 2. Theme Toggle
+      const savedTheme = localStorage.getItem('invox_theme_mode') || 'dark';
+      if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+
+      document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const isDark = document.documentElement.classList.toggle('dark');
+          localStorage.setItem('invox_theme_mode', isDark ? 'dark' : 'light');
+        });
+      });
+
+      const currentUser = window.InvoxAuth.getCurrentUser();
+
+      // Populate User Header Badge
+      const userInitials = (currentUser?.displayName || 'U').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      document.getElementById('nav-user-avatar').textContent = userInitials;
+      document.getElementById('nav-user-name').textContent = currentUser?.displayName || currentUser?.email;
+      document.getElementById('badge-user-uid').textContent = 'UID: ' + currentUser?.uid;
+
+      // 3. Tab Switching Logic
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabPanes = document.querySelectorAll('.tab-pane');
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-tab');
+          
+          tabBtns.forEach(b => {
+            b.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+            b.classList.add('text-slate-400');
+          });
+          btn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+          btn.classList.remove('text-slate-400');
+
+          tabPanes.forEach(p => p.classList.add('hidden'));
+          const targetPane = document.getElementById(targetId);
+          if (targetPane) targetPane.classList.remove('hidden');
+
+          if (window.lucide) window.lucide.createIcons();
+        });
+      });
+
+      // 4. Load Business Profile Data
+      let currentProfile = window.InvoxStorage.getBusinessProfile() || {};
+      let currentLogoBase64 = currentProfile.logo || '';
+
+      const tradeNameInput = document.getElementById('biz-trade-name');
+      const legalNameInput = document.getElementById('biz-legal-name');
+      const emailInput = document.getElementById('biz-email');
+      const phoneInput = document.getElementById('biz-phone');
+      const taxInput = document.getElementById('biz-tax-number');
+      const currInput = document.getElementById('biz-currency');
+      const upiInput = document.getElementById('biz-upi-id');
+      const addrInput = document.getElementById('biz-address');
+      const notesInput = document.getElementById('biz-notes');
+      const logoPreview = document.getElementById('logo-preview-img');
+      const logoPlaceholder = document.getElementById('logo-placeholder');
+
+      function syncProfileFields() {
+        tradeNameInput.value = currentProfile.name || currentUser?.businessProfile?.name || '';
+        legalNameInput.value = currentProfile.companyName || currentUser?.businessProfile?.companyName || '';
+        emailInput.value = currentProfile.email || currentUser?.email || '';
+        phoneInput.value = currentProfile.phone || '';
+        taxInput.value = currentProfile.taxNumber || '';
+        currInput.value = currentProfile.currency || 'INR';
+        upiInput.value = currentProfile.upiId || '';
+        addrInput.value = currentProfile.address || '';
+        notesInput.value = currentProfile.notes || '';
+
+        if (currentLogoBase64) {
+          logoPreview.src = currentLogoBase64;
+          logoPreview.classList.remove('hidden');
+          logoPlaceholder.classList.add('hidden');
+        } else {
+          logoPreview.classList.add('hidden');
+          logoPlaceholder.classList.remove('hidden');
+        }
+      }
+      syncProfileFields();
+
+      // Logo File Upload handler
+      const logoFileInput = document.getElementById('logo-file-input');
+      logoFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+          showToast('Image size exceeds 2MB limit. Please choose a smaller file.', 'error');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          currentLogoBase64 = evt.target.result;
+          logoPreview.src = currentLogoBase64;
+          logoPreview.classList.remove('hidden');
+          logoPlaceholder.classList.add('hidden');
+          showToast('Logo selected! Click "Save Business Details" to persist.', 'info');
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // Remove Logo handler
+      document.getElementById('btn-remove-logo').addEventListener('click', () => {
+        currentLogoBase64 = '';
+        logoPreview.src = '';
+        logoPreview.classList.add('hidden');
+        logoPlaceholder.classList.remove('hidden');
+        logoFileInput.value = '';
+        showToast('Logo removed. Save changes to update invoices.', 'info');
+      });
+
+      // Save Business Profile
+      document.getElementById('form-business-details').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const updatedProfile = {
+          name: tradeNameInput.value.trim(),
+          companyName: legalNameInput.value.trim(),
+          email: emailInput.value.trim(),
+          phone: phoneInput.value.trim(),
+          taxNumber: taxInput.value.trim(),
+          currency: currInput.value,
+          upiId: upiInput.value.trim(),
+          address: addrInput.value.trim(),
+          notes: notesInput.value.trim(),
+          logo: currentLogoBase64
+        };
+
+        window.InvoxStorage.saveBusinessProfile(updatedProfile);
+        await window.InvoxAuth.updateProfile({ businessProfile: updatedProfile });
+        showToast('Business details & logo updated successfully!', 'success');
+      });
+
+      // 5. Personal Account Tab
+      const accNameInput = document.getElementById('acc-name');
+      const accEmailInput = document.getElementById('acc-email');
+
+      accNameInput.value = currentUser?.displayName || '';
+      accEmailInput.value = currentUser?.email || '';
+
+      document.getElementById('form-account-details').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newName = accNameInput.value.trim();
+        if (!newName || newName.length < 2) {
+          showToast('Please enter your full name', 'error');
+          return;
+        }
+
+        try {
+          await window.InvoxAuth.updateProfile({ displayName: newName });
+          document.getElementById('nav-user-name').textContent = newName;
+          showToast('Account name updated successfully!', 'success');
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // 6. Security (Change Password)
+      const pwdCurrent = document.getElementById('pwd-current');
+      const pwdNew = document.getElementById('pwd-new');
+      const pwdConfirm = document.getElementById('pwd-confirm');
+      const pwdStrengthBar = document.getElementById('pwd-strength-bar');
+      const pwdStrengthLabel = document.getElementById('pwd-strength-label');
+
+      // Password toggle buttons
+      document.querySelectorAll('.btn-toggle-pwd').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-target');
+          const targetInput = document.getElementById(targetId);
+          if (!targetInput) return;
+          const isPass = targetInput.type === 'password';
+          targetInput.type = isPass ? 'text' : 'password';
+          btn.innerHTML = isPass ? '<i data-lucide="eye-off" class="w-4 h-4"></i>' : '<i data-lucide="eye" class="w-4 h-4"></i>';
+          if (window.lucide) window.lucide.createIcons();
+        });
+      });
+
+      pwdNew.addEventListener('input', () => {
+        const res = window.InvoxAuth.constructor.evaluatePasswordStrength(pwdNew.value);
+        pwdStrengthBar.style.width = res.percent + '%';
+        pwdStrengthBar.className = `h-full transition-all duration-300 ${res.colorClass}`;
+        pwdStrengthLabel.textContent = res.label;
+        pwdStrengthLabel.className = `font-bold ${res.textColor}`;
+      });
+
+      document.getElementById('form-change-password').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const currentPass = pwdCurrent.value;
+        const newPass = pwdNew.value;
+        const confPass = pwdConfirm.value;
+
+        try {
+          await window.InvoxAuth.changePassword(currentPass, newPass, confPass);
+          showToast('Password changed successfully!', 'success');
+          pwdCurrent.value = '';
+          pwdNew.value = '';
+          pwdConfirm.value = '';
+          pwdStrengthBar.style.width = '0%';
+          pwdStrengthLabel.textContent = 'None';
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // 7. Workspace Data & Stats
+      function updateWorkspaceStats() {
+        const invoices = window.InvoxStorage.getInvoices();
+        const pos = window.InvoxStorage.getPurchaseOrders();
+        const quotations = window.InvoxStorage.getQuotations();
+        const clients = window.InvoxStorage.getClients();
+
+        document.getElementById('stat-invoices-count').textContent = invoices.length;
+        document.getElementById('stat-pos-count').textContent = pos.length;
+        document.getElementById('stat-quotations-count').textContent = quotations.length;
+        const quotationTotals = quotations.reduce((totals, quotation) => {
+          const currency = quotation.currency || 'INR';
+          totals[currency] = (totals[currency] || 0) + (Number(quotation.grandTotal) || 0);
+          return totals;
+        }, {});
+        const totalValue = Object.entries(quotationTotals)
+          .map(([currency, amount]) => window.InvoxCalc.formatCurrency(amount, currency))
+          .join(' + ') || window.InvoxCalc.formatCurrency(0, 'INR');
+        document.getElementById('stat-quotations-value').textContent = `Total value: ${totalValue}`;
+        document.getElementById('stat-clients-count').textContent = clients.length;
+      }
+      updateWorkspaceStats();
+
+      // Export Backup
+      document.getElementById('btn-export-backup').addEventListener('click', () => {
+        const data = window.InvoxStorage.exportAll();
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invox-backup-${currentUser?.uid || 'user'}-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Account data exported successfully!', 'success');
+      });
+
+      // Clear Workspace Data
+      document.getElementById('btn-clear-workspace').addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear your invoices, purchase orders, quotations, and clients? This cannot be undone.')) {
+          const scope = window.InvoxStorage.getUserScope();
+          localStorage.removeItem(`invox_saved_invoices_${scope}`);
+          localStorage.removeItem(`invox_saved_purchase_orders_${scope}`);
+          localStorage.removeItem(`invox_saved_quotations_${scope}`);
+          localStorage.removeItem(`invox_saved_clients_${scope}`);
+          updateWorkspaceStats();
+          showToast('Workspace data cleared.', 'info');
+        }
+      });
+
+      // Sign out
+      document.getElementById('btn-logout').addEventListener('click', async () => {
+        try {
+          await window.InvoxAuth.signOut();
+          window.location.href = 'index.html';
+        } catch (error) {
+          showToast(`Sign out failed: ${error.message}`, 'error');
+        }
+      });
+
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.add('toast-leave');
+          setTimeout(() => toast.remove(), 250);
+        }, 3200);
+      }
+
+      if (window.lucide) window.lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
