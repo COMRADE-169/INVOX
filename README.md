@@ -1,54 +1,239 @@
-# INVOX
+# INVOX — Invoice, Purchase Order & Quotation Studio
 
-INVOX is a browser-based invoice and purchase-order studio. Vercel serves the static frontend; Firebase Authentication and Cloud Firestore provide accounts and data storage. No server or Cloud Functions are required.
+<img width="1842" height="906" alt="image" src="https://github.com/user-attachments/assets/f6d707fd-9f41-4487-82a6-c503058f72cd" />
 
-## Local development
 
-1. Copy `.env.example` to `.env` and fill in the Firebase web app configuration.
-2. Run:
 
-   ```sh
-   npm ci
-   npm run build
-   npm run dev
-   ```
+**INVOX** is a modern, responsive web app for freelancers and small businesses in India. Create GST-ready **invoices**, **purchase orders** and **quotations**, add a scannable **UPI QR code**, and export a clean **A4 PDF**, all from the browser.
 
-3. Open `http://localhost:3000`.
+> **Live demo:** [add your deployed link here]
 
-The Firebase web configuration is public client configuration, not a server secret. The build writes it to an ignored generated file in `public/js`; do not commit that file.
+---
 
-## Firebase setup
+## Screenshots
 
-1. The repository is configured to use Firebase project `invox-ab91c`. In that project's console, register a Web App and copy its six config values into the Vercel environment variables listed below. Confirm the storage bucket value in the Web App config rather than assuming it matches the example.
-2. In Firebase Authentication, enable **Email/Password** and **Google** sign-in.
-3. Add your Vercel deployment domain (and any custom domain) to Authentication's authorized domains.
-4. Create a Cloud Firestore database.
-5. Install and authenticate the Firebase CLI, then deploy the Firestore security rules:
+ 
 
-   ```sh
-   npm install --global firebase-tools
-   firebase login
-   firebase deploy --only firestore:rules
-   ```
+| <img width="1666" height="905" alt="image" src="https://github.com/user-attachments/assets/a546fe41-2344-4ba2-91ad-25594b73623f" /> |
 
-Firestore rules limit reads and writes to the authenticated user's own records. Email verification is not required. Review and deploy `firestore.rules` whenever its data model changes.
-The project does not deploy Cloud Functions, so no Blaze upgrade is needed for this setup. AI invoice generation and account deletion are not provided; users can sign out and manage their data from the workspace.
+| <img width="1745" height="895" alt="image" src="https://github.com/user-attachments/assets/54dd116c-4ff5-404a-8d76-03cbeda43621" /> |
 
-## Vercel deployment
 
-1. Import this repository into Vercel. Use the repository root and the **Other** framework preset.
-2. Set **Build Command** to `npm run build`, **Output Directory** to `public`, and the Node.js version to **22**.
-3. Add these environment variables for Production (and Preview/Development if needed):
 
-   - `FIREBASE_API_KEY`
-   - `FIREBASE_AUTH_DOMAIN`
-   - `FIREBASE_PROJECT_ID`
-   - `FIREBASE_STORAGE_BUCKET`
-   - `FIREBASE_MESSAGING_SENDER_ID`
-   - `FIREBASE_APP_ID`
+---
 
-4. Deploy. The existing `vercel.json` keeps the clean page routes. Authentication and data access go directly from the browser to Firebase; no Vercel API proxy, MySQL server, or Cloud Functions are needed.
+## Features
 
-## Existing data
+### Invoices
+- Split-screen editor with a **live A4 preview** that updates as you type
+- Business details, logo upload, GSTIN and bank details with a saved profile
+- Line items with quantity, rate, **GST % (0, 5, 12, 18, 28 or custom)** and discount (percentage or flat)
+- **CGST + SGST** or **IGST** split, with amount in words
+- **UPI QR code** on every invoice with the amount filled in
+- Multi-currency support (INR, USD, EUR, GBP, AED, CAD, AUD, SGD and more)
+- **PDF download** (html2pdf) and clean print layout
+- Reusable client directory with search
 
-This Firebase version does not automatically migrate accounts or records from the previous MySQL backend. Export any existing data before switching, and migrate it separately before deleting or shutting down the old database. The app can import previously cached browser data after the user signs into a matching Firebase account.
+### Purchase Orders
+- Vendor directory and auto-incrementing PO numbers (`PO-YYYY-XXX`)
+- Delivery address options
+- Status lifecycle: **Draft → Sent → Approved → Received → Closed / Cancelled**, with filters and search
+- **Convert to Invoice** in one click
+
+### Quotations
+- Auto-numbered quotes with a **valid-until** date
+- Statuses: Draft, Sent, Accepted, Rejected, Expired
+- Search, status filters, and a dashboard count with total value
+- **Convert accepted quotes to invoices**
+
+
+### Accounts & Data
+- Sign up, log in, log out, forgot password and Google sign-in
+- Session persists across refreshes, and the account avatar opens the dashboard
+- Each user's data is stored separately under their own account
+- JSON backup export of your workspace
+
+### Design
+- Dark, premium interface with lime accents, a 3D animated landing hero (React Three Fiber and GSAP), and responsive layouts for mobile, tablet and desktop
+
+---
+
+## Tech Stack
+
+| Area | Technology |
+|---|---|
+| Pages | HTML5, Tailwind CSS, vanilla JavaScript |
+| Icons | Lucide |
+| 3D & motion | Three.js, React Three Fiber, GSAP |
+| Bundling | esbuild |
+| PDF | html2pdf.js |
+| Auth & database | Firebase Authentication, Cloud Firestore |
+| Local server | Node.js (static server for development) |
+
+---
+
+## Project Structure
+
+```
+invox/
+├── public/
+│   ├── index.html          # Landing page
+│   ├── about.html          # About us
+│   ├── login.html          # Sign in
+│   ├── signup.html         # Create account
+│   ├── app.html            # Studio (Invoices, POs, Quotations, AI Quick Invoice)
+│   ├── profile.html        # Account & business settings
+│   ├── css/
+│   │   └── styles.css      # Theme variables, A4 paper and print styles
+│   └── js/
+│       ├── auth.js         # Firebase authentication
+│       ├── storage.js      # Data layer (Firestore + offline cache)
+│       ├── calculations.js # Totals, GST, currencies, amount in words
+│       ├── pdf-export.js   # PDF download and print
+│       ├── app.js          # Application controller
+│       └── dist/           # Generated by the build (not committed)
+├── src/                    # Motion and 3D sources bundled by esbuild
+├── api/                    # Serverless function for Vercel
+├── netlify/functions/      # Serverless function for Netlify
+├── server.js               # Local development server
+├── firestore.rules         # Firestore security rules
+├── firebase.json
+├── netlify.toml
+├── vercel.json
+├── package.json
+├── .env.example
+└── .gitignore
+```
+
+
+
+---
+
+## Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) 20 or newer
+- A free [Firebase](https://console.firebase.google.com/) project
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/<your-username>/invox.git
+cd invox
+npm install
+```
+
+### 2. Set up Firebase
+1. Create a project in the Firebase console and add a **Web app**.
+2. Enable **Email/Password** and **Google** under *Authentication → Sign-in method*.
+3. Create a **Firestore Database**.
+4. Deploy the rules from `firestore.rules` (see [Security](#security)).
+
+### 3. Configure environment variables
+
+Copy the example file and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+```env
+PORT=3000
+
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_STORAGE_BUCKET=
+FIREBASE_MESSAGING_SENDER_ID=
+FIREBASE_APP_ID=
+```
+
+Paste the values with no quotes or spaces. Never commit `.env`.
+
+### 4. Run locally
+
+```bash
+npm start
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Available Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run build` | Bundles the motion and 3D scripts with esbuild |
+| `npm start` | Builds, then starts the local server |
+
+---
+
+## Deployment
+
+INVOX is a static website plus one small config function, so it deploys on any static host.
+
+**Netlify**
+- Build command: `npm run build`
+- Publish directory: `public`
+- Functions directory: `netlify/functions`
+
+**Vercel**
+- Build command: `npm run build`
+- Output directory: `public`
+
+**Firebase Hosting**
+```bash
+firebase deploy
+```
+
+On any host, add every variable from `.env.example` in the host's *Environment variables* settings, and add your deployed domain to *Firebase → Authentication → Settings → Authorized domains*.
+
+---
+
+## Security
+
+- Each signed-in user can only read and write their own documents, enforced by `firestore.rules`.
+- Firebase web config values identify your project and are not secret, so the security rules are what protect the data.
+- Keep `.env` out of Git (it is listed in `.gitignore`).
+- A website-only app can't hide third-party API keys. Don't put private keys in frontend code.
+
+---
+
+## Roadmap
+
+- [ ] Payment links and automatic "Paid" status
+- [ ] Partial payments and balance due
+- [ ] Recurring invoices
+- [ ] Expense tracker and profit view
+- [ ] GST summary report with Excel export
+- [ ] Shareable invoice links
+- [ ] Hindi and English language toggle
+
+---
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m "Add your feature"`
+4. Push the branch: `git push origin feature/your-feature`
+5. Open a pull request
+
+---
+
+## License
+
+Released under the [MIT License](LICENSE).
+
+---
+
+## Author
+
+**Rushiraj Gade **
+Second-year B.E. student, AI & Data Science
+[GitHub](https://github.com/<your-username>) · [LinkedIn](https://linkedin.com/in/<your-profile>)
+
+If you find INVOX useful, please give it a star.
