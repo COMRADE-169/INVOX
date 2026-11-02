@@ -6,7 +6,8 @@
 
 **INVOX** is a modern, responsive web app for freelancers and small businesses in India. Create GST-ready **invoices**, **purchase orders** and **quotations**, add a scannable **UPI QR code**, and export a clean **A4 PDF**, all from the browser.
 
-> **Live demo:** [add your deployed link here]
+> **Live demo:** https://invox-oqkm.vercel.app/
+> 
 
 ---
 
